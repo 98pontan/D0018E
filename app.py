@@ -22,7 +22,7 @@ finally:
     connection.close()
 """
 app = Flask(__name__)
-
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 @app.route('/')
 @app.route('/index')
@@ -33,9 +33,11 @@ def hello_world():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
-    if request.form == 'POST' and form.validate():
+    if (request.method == 'POST') and form.validate():
+        print("yes")
+        return render_template('index.html')
+    else:
         return render_template('register.html', form=form)
-    return render_template('register.html', form=form)
 
 
 
