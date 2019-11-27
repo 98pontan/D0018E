@@ -1,20 +1,24 @@
 from flask import Flask, render_template, flash, redirect, url_for, sessions, logging, request
 import pymysql.cursors
+from hashlib import sha3_256
+from sys import getsizeof
+
 from Models import UserForms
 
 from Models.UserForms import RegisterForm, LoginForm
 
-"""connection = pymysql.connect(host='localhost',
+connection = pymysql.connect(host='localhost',
                              user='oscar',
-                             password='hej',
+                             password='hejsan123',
                              db='BookCommerce',
                              charset='utf8',
                              cursorclass=pymysql.cursors.DictCursor)
 
+"""
 try:
     with connection.cursor() as cursor:
         # Create a new record
-        sql = ""#"CREATE TABLE Employee(id int, LastName varchar(32), FirstName varchar(32), DepartmentCode int)"
+        sql = "CREATE TABLE Employee(id int, LastName varchar(32), FirstName varchar(32), DepartmentCode int)"
         cursor.execute(sql)
     connection.commit()
 finally:
@@ -33,9 +37,28 @@ def index():
 def register():
     form = RegisterForm(request.form)
     if (request.method == 'POST') and form.validate():
-        print("yes")
+        first_name = form.first_name.data
+        last_name = form.last_name.data
+        address = form.address.data
+        country = form.country.data
+        salt = form.salt
+        password = sha3_256((form.password.data+form.salt).encode()).hexdigest()
+        email = form.email.data
+        city = form.city.data
+        postal_code = int(form.postal_code.data)
+        phone = int(form.phone.data)
+        try:
+            with connection.cursor() as cursor:
+                # Create a new record
+                sql = "INSERT INTO User (Email, Hash, Salt, FirstName, LastName, City, PostalCode, Country, Phone, Address, Privilege, AccountBalance) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                cursor.execute(sql, (email, password, salt, first_name, last_name, city, postal_code, country, phone, address, 1, 500))
+            connection.commit()
+        finally:
+            connection.close()
         flash('Account created!')
         return redirect(url_for('index'))
+
+
     else:
         return render_template('register.html', form=form)
 
