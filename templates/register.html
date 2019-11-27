@@ -4,16 +4,16 @@
 {% block body %}
     <p>This is the registration page</p>
     <form method="POST" action="">
+    {# form.hidden_tag() #}
         <div class="form-group">
             {{render_field(form.first_name)}}
             {{render_field(form.last_name)}}
-            {{ render_field(form.password) }}
+            {{render_field(form.password)}}
             {{render_field(form.email)}}
             {{render_field(form.phone)}}
             {{render_field(form.city)}}
             {{render_field(form.postal_code)}}
-            {{ form.submit(class="btn btn-primary btn-sm") }}
-            <button type="submit" class="btn btn-primary btn-sm">Register</button>
+            {{form.submit(class="btn btn-primary btn-sm")}}
         </div>
     </form>
 {% endblock %}

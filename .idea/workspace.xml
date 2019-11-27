@@ -2,9 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d810756-39e7-4bee-90df-829bc7443903" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Models/UserForms.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/includes/_footer.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/Registration.py" beforeDir="false" afterPath="$PROJECT_DIR$/Models/Registration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Models/Registration.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/layout.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/register.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -89,6 +94,7 @@
       <workItem from="1574762668522" duration="4000" />
       <workItem from="1574763088321" duration="2886000" />
       <workItem from="1574774757965" duration="4461000" />
+      <workItem from="1574845840580" duration="4896000" />
     </task>
     <servers />
   </component>
@@ -109,6 +115,6 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/BookCommerce$BookCommerce.coverage" NAME="BookCommerce Coverage Results" MODIFIED="1574778926434" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BookCommerce$BookCommerce.coverage" NAME="BookCommerce Coverage Results" MODIFIED="1574851170015" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

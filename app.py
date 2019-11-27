@@ -1,9 +1,8 @@
 from flask import Flask, render_template, flash, redirect, url_for, sessions, logging, request
 import pymysql.cursors
-from Models import Registration
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from Models import UserForms
 
-from Models.Registration import RegisterForm
+from Models.UserForms import RegisterForm, LoginForm
 
 """connection = pymysql.connect(host='localhost',
                              user='oscar',
@@ -22,11 +21,11 @@ finally:
     connection.close()
 """
 app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app.secret_key = 'a4b99086395b5b714fb1856c1d6cd709'
 
 @app.route('/')
 @app.route('/index')
-def hello_world():
+def index():
     return render_template('index.html')
 
 
@@ -35,11 +34,15 @@ def register():
     form = RegisterForm(request.form)
     if (request.method == 'POST') and form.validate():
         print("yes")
-        return render_template('index.html')
+        flash('Account created!')
+        return redirect(url_for('index'))
     else:
         return render_template('register.html', form=form)
 
-
+@app.route('/login')
+def login():
+    form = LoginForm()
+    return render_template(login.html, title='Login', form=form)
 
 if __name__ == '__main__':
     app.run(Debug=True)
