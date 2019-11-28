@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="container">
+        <h1>Category</h1>
+        <p class="lead">this application is built in python flask</p>
+        <section>
+
+            {% for product in category %}
+        <li class="list-group item"><a href="category/{{category.id}}"> {{category.title}}</a></li>
+         {% endfor %}
+
+            <div class="carousel" role="listbox" style="max-height:300px">
+                <h3>First book</h3>
+
+            </div>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Author</th>
+                </tr>
+                {% for category in thisCategory %}
+
+                {% endfor %}
+            </table>
+
+
+
+        </section>
+    </div>
+{% endblock %}
