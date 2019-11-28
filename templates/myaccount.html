@@ -1,0 +1,9 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <ul class="list-group">
+    {% for value in values %}
+        <li class="list-group-item">{{ value }} = {{ values[value] }} </li>
+    {% endfor %}
+    </ul>
+{% endblock %}
