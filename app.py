@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, sessions, logging, request
+from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
 import pymysql.cursors
 from hashlib import sha3_256
 from Models import UserForms
