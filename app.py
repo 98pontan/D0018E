@@ -7,13 +7,6 @@ from Models import UserForms
 
 from Models.UserForms import RegisterForm, LoginForm
 
-connection = pymysql.connect(host='localhost',
-                             user='oscar',
-                             password='hejsan123',
-                             db='BookCommerce',
-                             charset='utf8',
-                             cursorclass=pymysql.cursors.DictCursor)
-
 """
 try:
     with connection.cursor() as cursor:
@@ -26,6 +19,7 @@ finally:
 """
 app = Flask(__name__)
 app.secret_key = 'a4b99086395b5b714fb1856c1d6cd709'
+
 
 @app.route('/')
 @app.route('/index')
@@ -42,11 +36,17 @@ def register():
         address = form.address.data
         country = form.country.data
         salt = form.salt
-        password = sha3_256((form.password.data+form.salt).encode()).hexdigest()
+        password = sha3_256((form.password.data + form.salt).encode()).hexdigest()
         email = form.email.data
         city = form.city.data
         postal_code = int(form.postal_code.data)
         phone = int(form.phone.data)
+        connection = pymysql.connect(host='localhost',
+                                     user='oscar',
+                                     password='hejsan123',
+                                     db='BookCommerce',
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.DictCursor)
         try:
             with connection.cursor() as cursor:
                 # Create a new record
@@ -62,10 +62,43 @@ def register():
     else:
         return render_template('register.html', form=form)
 
-@app.route('/login')
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = LoginForm()
-    return render_template(login.html, title='Login', form=form)
+    form = LoginForm(request.form)
+    if (request.method == 'POST') and form.validate():
+        email = form.email.data
+        connection = pymysql.connect(host='localhost',
+                                     user='oscar',
+                                     password='hejsan123',
+                                     db='BookCommerce',
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.DictCursor)
+        try:
+            with connection.cursor() as cursor:
+                # Create a new record
+                sql = "SELECT User.Hash, User.Salt FROM User WHERE User.Email = %s;"
+                result = cursor.execute(sql, (email))
+            connection.commit()
+        finally:
+            connection.close()
+        if (result >= 1):
+            data = cursor.fetchone()
+            hash = data['Hash']
+            salt = data['Salt']
+            password = sha3_256((form.password.data + salt).encode()).hexdigest()
+            if(password == hash):
+                print("password correct")
+                return redirect(url_for('index'))
+            else:
+                error = "Password incorrect"
+                return render_template('login.html', error=error, form=form)
+                print("password incorrect")
+        else:
+            error = "Username incorrect"
+            return render_template('login.html', error=error, form=form)
+    return render_template('login.html', title='Login', form=form)
+
 
 if __name__ == '__main__':
     app.run(Debug=True)
