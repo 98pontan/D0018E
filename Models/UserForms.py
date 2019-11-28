@@ -21,5 +21,5 @@ class RegisterForm(Form):
 
 class LoginForm(Form):
     email = StringField('Email', validators=[InputRequired()])
-    password = PasswordField('Email', validators=[InputRequired()])
+    password = PasswordField('Password', validators=[InputRequired()])
     submit = SubmitField('Login')

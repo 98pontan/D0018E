@@ -1,5 +1,16 @@
 {% extends 'layout.html' %}
+{% from "formhelper.html" import render_field %}
 
 {% block body %}
-
+        <form method="POST" action="">
+        {# form.hidden_tag() #}
+        <div class="form-group">
+            {{ render_field(form.email) }}
+            {{ render_field(form.password) }}
+            {{ form.submit(class="btn btn-primary btn-sm") }}
+        </div>
+    </form>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
 {% endblock %}
