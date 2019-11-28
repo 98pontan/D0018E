@@ -1,9 +1,9 @@
 from flask import Flask, render_template, flash, redirect, url_for, sessions, logging, request
-import pymysql.cursors
+"""import pymysql.cursors
 from Models import UserForms
 
 from Models.UserForms import RegisterForm, LoginForm
-
+"""
 """connection = pymysql.connect(host='localhost',
                              user='oscar',
                              password='hej',
@@ -44,5 +44,11 @@ def login():
     form = LoginForm()
     return render_template(login.html, title='Login', form=form)
 
+@app.route('/category')
+def category():
+    return render_template('category.html')
+
+
+
 if __name__ == '__main__':
-    app.run(Debug=True)
+    app.run(debug=True)

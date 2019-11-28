@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="category">
+        <h1>Category</h1>
+        <p class="lead">this application is built in python flask</p>
+        <section>
+
+
+            {% for category_ID in category %}
+        <li class="list-group item"><a href="category/{{category.id}}"> {{category.title}}</a></li>
+         {% endfor %}
+
+            <article class = "book1">
+
+            </article>
+            <article class = "book2" >
+
+            </article>
+
+            <article class = "book3" >
+
+            </article>
+
+            <style>
+                .article{
+                        font-size: 40px;
+                        }
+            </style>
+
+        </section>
+    </div>
+{% endblock %}
