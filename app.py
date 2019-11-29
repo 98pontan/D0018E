@@ -6,7 +6,7 @@ from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
 
-from Models.UserForms import RegisterForm, LoginForm
+from Models.UserForms import RegisterForm, LoginForm, EditAccountForm
 
 """
 connection = pymysql.connect(host='localhost',
@@ -148,6 +148,12 @@ def myaccount():
     print(data)
     return render_template('myaccount.html', values=data)
 
+@app.route('/myaccount/<edit>', methods=['GET', 'POST'])
+@login_required
+def editaccount(edit):
+    form = EditAccountForm(request.form)
+    
+    return 'Edit account'
 
 # category
 @app.route('/category')

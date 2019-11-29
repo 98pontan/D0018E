@@ -19,7 +19,19 @@ class RegisterForm(Form):
     phone = StringField('Phone Number', validators=[Length(min=1, max=50)])
     submit = SubmitField('Sign Up')
 
+
 class LoginForm(Form):
     email = StringField('Email', validators=[InputRequired()])
     password = PasswordField('Password', validators=[InputRequired()])
     submit = SubmitField('Login')
+
+
+class EditAccountForm(Form):
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=6, max=50)])
+    salt = token_hex(16)
+    address = StringField('Address', validators=[InputRequired(), Length(min=1, max=50)])
+    country = StringField('Country', validators=[InputRequired(), Length(min=1, max=50)])
+    city = StringField('City', validators=[InputRequired(), Length(min=1, max=50)])
+    postal_code = StringField('Postal Code', validators=[InputRequired(), Length(min=5, max=5)])
+    phone = StringField('Phone Number', validators=[Length(min=1, max=50)])
+    submit = SubmitField('Submit changes')
