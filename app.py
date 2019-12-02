@@ -152,7 +152,25 @@ def myaccount():
 @login_required
 def editaccount(edit):
     form = EditAccountForm(request.form)
-    
+    user_id = session['user_id']
+    if request.method == 'POST' and form.validate():
+        connection = pymysql.connect(host='localhost',
+                                     user='oscar',
+                                     password='hejsan123',
+                                     db='BookCommerce',
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.DictCursor)
+        try:
+            with connection.cursor() as cursor:
+                # Create a new record
+                sql = "SELECT User.User_ID, User.Hash, User.Salt FROM User WHERE User.Email = %s;"
+                result = cursor.execute(sql, user_id)
+            connection.commit()
+        finally:
+            connection.close()
+        if result >= 1:
+            pass
+
     return 'Edit account'
 
 # category

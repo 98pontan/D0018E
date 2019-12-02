@@ -1,6 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, sessions, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators, SubmitField
-import secrets
 from secrets import token_hex
 
 from wtforms.validators import InputRequired, Length, Email
