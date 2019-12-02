@@ -3,8 +3,37 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#Project
+workspace.xml
+tasks.xml
+
+
 # C extensions
 *.so
+
+.DS_Store
+.env
+.flaskenv
+*.pyc
+*.pyo
+env/
+env*
+dist/
+build/
+*.egg
+*.egg-info/
+_mailinglist
+.tox/
+.cache/
+.pytest_cache/
+.idea/
+docs/_build/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+*,cover
 
 # Distribution / packaging
 .Python
