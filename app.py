@@ -2,21 +2,13 @@ from datetime import timedelta
 
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, g
 import pymysql.cursors
+import pymysql
 from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
 
 from Models.UserForms import RegisterForm, LoginForm, EditAccountForm
 
-"""
-connection = pymysql.connect(host='localhost',
-                             user='oscar',
-                             password='hej',
-                             db='BookCommerce',
-                             charset='utf8',
-                             cursorclass=pymysql.cursors.DictCursor)
-
-"""
 app = Flask(__name__)
 app.secret_key = 'a4b99086395b5b714fb1856c1d6cd709'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
@@ -175,15 +167,49 @@ def editaccount(edit):
 
 # category
 @app.route('/category')
-def category(id):
-    # create cursor
-    cur = pymysql.connection.cursor()
+# take in an id parameter but for now leave blank
+def category():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
 
-    # get books
-    result = cur.execute("SELECT * FROM Product WHERE Category_ID = id ")
-    categories = cur.fetchall()
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "SELECT * FROM Product WHERE Category_ID = 1"
+            result = cursor.execute(sql)
+        connection.commit()
+        connection.close()
+    finally:
+        if result >= 1:
+            data = cursor.fetchall()
+            print(data)
+            return render_template('category.html', data=data)
+#checkout
+@app.route('/checkout')
+def checkout():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
 
-    return render_template('category.html', categories=categories)
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "SELECT * FROM CartItems WHERE User_ID = "
+            result = cursor.execute(sql)
+        connection.commit()
+        connection.close()
+    finally:
+        if result >= 1:
+            data = cursor.fetchall()
+            print(data)
+            return render_template('category.html', data=data)
 
 
 if __name__ == '__main__':

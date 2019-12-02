@@ -3,29 +3,44 @@
 {% block body %}
     <div class="container">
         <h1>Category</h1>
-        <p class="lead">this application is built in python flask</p>
         <section>
 
-            {% for product in category %}
-        <li class="list-group item"><a href="category/{{category.id}}"> {{category.title}}</a></li>
-         {% endfor %}
-
             <div class="carousel" role="listbox" style="max-height:300px">
-                <h3>First book</h3>
+                <h3>Horror</h3>
 
             </div>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Author</th>
-                </tr>
-                {% for category in thisCategory %}
+            <article>
+
+                {% for category in data %}
+                    <ul>
+                        <li>Author: {{category.Author}}</li>
+                        <li>Price: {{category.Price}}</li>
+                        <li>Units in Stock: {{category.UnitsInStock}}</li>
+                        <li>Pages: {{category.NumberOfPages}}</li>
+                        <li>Publisher: {{category.Publicer}}</li>
+                        <li>Language: {{category.Language}}</li>
+                        <button class="cartButton">Add to cart</button>
+                        <a href="/checkout"> <button>Buy Now</button> </a>
+                    </ul>
+
 
                 {% endfor %}
-            </table>
+            </article>
 
+        <div>
 
+        </div>
 
         </section>
     </div>
+<style>
+    table{
+        width:100%;
+    }
+    td, th {
+        border:1px solid #dddddd;
+        text-align:left;
+        padding:8px;
+    }
+</style>
 {% endblock %}
