@@ -106,21 +106,33 @@ def category():
                                  db='BookCommerce',
                                  charset='utf8',
                                  cursorclass=pymysql.cursors.DictCursor)
-    """ 
-    #create cursor
-    cur = pymysql.connection.cursor()
-
-    #get books
-    result = cur.execute("SELECT * FROM Product WHERE Category_ID = 1")
-    categories = cur.fetchall()
-
-    return render_template('category.html', categories=categories) 
-    """
 
     try:
         with connection.cursor() as cursor:
             # Create a new record
             sql = "SELECT * FROM Product WHERE Category_ID = 1"
+            result = cursor.execute(sql)
+        connection.commit()
+        connection.close()
+    finally:
+        if result >= 1:
+            data = cursor.fetchall()
+            print(data)
+            return render_template('category.html', data=data)
+#checkout
+@app.route('/checkout')
+def checkout():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "SELECT * FROM CartItems WHERE User_ID = "
             result = cursor.execute(sql)
         connection.commit()
         connection.close()
