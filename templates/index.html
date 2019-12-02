@@ -1,17 +1,6 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class=flashes>
-                {% for message in messages %}
-                    <div class="alert alert-success" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
     <p>
         Lore ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse volutpat quis lorem ac molestie. Nam
         pharetra purus mauris, vel molestie augue malesuada nec. Lorem ipsum dolor sit amet, consectetur adipiscing
