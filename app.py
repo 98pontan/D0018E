@@ -1,11 +1,11 @@
 from flask import Flask, render_template, flash, redirect, url_for, sessions, logging, request
 import pymysql.cursors
+import pymysql
 from hashlib import sha3_256
 from Models import UserForms
 
 from Models.UserForms import RegisterForm, LoginForm
-
-"""
+""" 
 connection = pymysql.connect(host='localhost',
                              user='oscar',
                              password='hej',
@@ -98,16 +98,37 @@ def login():
 
 #category
 @app.route('/category')
-def category(id):
+# take in an id parameter but for now leave blank
+def category():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    """ 
     #create cursor
     cur = pymysql.connection.cursor()
 
     #get books
-    result = cur.execute("SELECT * FROM Product WHERE Category_ID = id ")
+    result = cur.execute("SELECT * FROM Product WHERE Category_ID = 1")
     categories = cur.fetchall()
 
-    return render_template('category.html', categories= categories)
+    return render_template('category.html', categories=categories) 
+    """
 
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "SELECT * FROM Product WHERE Category_ID = 1"
+            result = cursor.execute(sql)
+        connection.commit()
+        connection.close()
+    finally:
+        if result >= 1:
+            data = cursor.fetchall()
+            print(data)
+            return render_template('category.html', data=data)
 
 
 if __name__ == '__main__':
