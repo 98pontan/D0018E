@@ -25,7 +25,7 @@ class LoginForm(Form):
 
 
 class EditAccountForm(Form):
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=6, max=50)])
+    password = PasswordField('Old password', validators=[InputRequired(), Length(min=6, max=50)])
     salt = token_hex(16)
     address = StringField('Address', validators=[InputRequired(), Length(min=1, max=50)])
     country = StringField('Country', validators=[InputRequired(), Length(min=1, max=50)])

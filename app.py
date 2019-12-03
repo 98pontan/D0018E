@@ -97,6 +97,7 @@ def login():
                 print("password correct")
                 session.permanent = True    #Makes the login valid for 5 minutes as set in config
                 session['logged_in'] = True
+                session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
                 flash('You are now logged in!', 'success')
                 return redirect(url_for('index'))
@@ -140,11 +141,18 @@ def myaccount():
     print(data)
     return render_template('myaccount.html', values=data)
 
-@app.route('/myaccount/<edit>', methods=['GET', 'POST'])
+@app.route('/myaccount/edit', methods=['GET', 'POST'])
 @login_required
-def editaccount(edit):
+def editaccount():
     form = EditAccountForm(request.form)
     user_id = session['user_id']
+    address = form.address.data
+    city = form.city.data
+    country = form.country.data
+    postal_code = form.postal_code.data
+    phone = form.phone.data
+    salt = form.salt
+    password = sha3_256((form.password.data + salt).encode()).hexdigest()
     if request.method == 'POST' and form.validate():
         connection = pymysql.connect(host='localhost',
                                      user='oscar',
@@ -155,15 +163,15 @@ def editaccount(edit):
         try:
             with connection.cursor() as cursor:
                 # Create a new record
-                sql = "SELECT User.User_ID, User.Hash, User.Salt FROM User WHERE User.Email = %s;"
-                result = cursor.execute(sql, user_id)
+                sql = "UPDATE User SET User.City = %s, User.Address = %s, User.Phone = %s, User.PostalCode = %s, User.Country = %s, User.Hash = %s, User.Salt = %s WHERE User.User_ID = %s;"
+                result = cursor.execute(sql, (city, address, phone, postal_code, country, password, salt, user_id))
             connection.commit()
         finally:
             connection.close()
-        if result >= 1:
-            pass
-
-    return 'Edit account'
+        flash('Info changed!')
+        return redirect(url_for('myaccount'))
+    else:
+        return render_template('editaccount.html', form=form)
 
 # category
 @app.route('/category')
