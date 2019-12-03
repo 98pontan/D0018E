@@ -164,11 +164,11 @@ def category():
             sql = "SELECT * FROM Product WHERE Category_ID = 1"
             result = cursor.execute(sql)
         connection.commit()
-        connection.close()
+
     finally:
+        connection.close()
         if result >= 1:
             data = cursor.fetchall()
-            print(data)
             return render_template('category.html', data=data)
 #checkout
 @app.route('/checkout')
@@ -183,15 +183,15 @@ def checkout():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "SELECT * FROM CartItems WHERE User_ID = "
-            result = cursor.execute(sql)
+            sql0 = "SELECT CartItem.Product_ID, CartItem.Quantity, Product.Author FROM CartItem, Cart, Product WHERE Cart.Cart_ID=CartItem.Cart_ID AND Cart.User_ID= %s AND CartItem.Product_ID=Product.Product_ID;"
+            cursor.execute(sql0, session['user_id'])
         connection.commit()
-        connection.close()
+
     finally:
-        if result >= 1:
-            data = cursor.fetchall()
-            print(data)
-            return render_template('category.html', data=data)
+        connection.close()
+    data = cursor.fetchall()
+    print(data)
+    return render_template('checkout.html', data=data)
 
 
 if __name__ == '__main__':

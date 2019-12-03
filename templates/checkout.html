@@ -10,8 +10,10 @@
 
             </div>
             <article>
-                {% for category in data %}
-
+                {% for cartItem in data %}
+                    <ul>
+                        <li>{{cartItem.Author}}</li>
+                    </ul>
                 {% endfor %}
             </article>
         </section>
