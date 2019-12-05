@@ -38,7 +38,28 @@ def admin_required(f):
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            # get categories
+            cursor.execute("SELECT * FROM Category;")
+            connection.commit()
+            categories = cursor.fetchall()
+
+            #get "new releases"
+            cursor.execute("SELECT * FROM Product ORDER BY Product_ID DESC LIMIT 3;")
+            connection.commit()
+            products = cursor.fetchall()
+
+    finally:
+        connection.close()
+    print(type(categories))
+    return render_template('index.html', categories=categories, products=products)
 
 
 # register
@@ -223,7 +244,7 @@ def admin():
 # category
 @app.route('/category')
 # take in an id parameter but for now leave blank
-def category():
+def category(id):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -234,7 +255,7 @@ def category():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "SELECT * FROM Product WHERE Category_ID = 1"
+            sql = "SELECT * FROM Product WHERE Category_ID = id"
             result = cursor.execute(sql)
         connection.commit()
 
