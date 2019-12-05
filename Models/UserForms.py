@@ -33,3 +33,7 @@ class EditAccountForm(Form):
     postal_code = StringField('Postal Code', validators=[InputRequired(), Length(min=5, max=5)])
     phone = StringField('Phone Number', validators=[Length(min=1, max=50)])
     submit = SubmitField('Submit changes')
+    delete = SubmitField('Delete')
+
+class DeleteAccount(Form):
+    delete = SubmitField('Delete')
