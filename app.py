@@ -99,6 +99,7 @@ def login():
                 session['logged_in'] = True
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
+                getCart_ID()
                 flash('You are now logged in!', 'success')
                 return redirect(url_for('index'))
             else:
@@ -187,7 +188,7 @@ def category():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "SELECT * FROM Product WHERE Category_ID = 1"
+            sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
             result = cursor.execute(sql)
         connection.commit()
 
@@ -195,9 +196,34 @@ def category():
         connection.close()
         if result >= 1:
             data = cursor.fetchall()
+            #print(data)
             return render_template('category.html', data=data)
+
+
+def getAccountBalanace():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s;"
+            cursor.execute(sql0, session['user_id'])
+        connection.commit()
+
+    finally:
+        connection.close()
+    accountBalance = cursor.fetchall()
+    return accountBalance
+
+
 #checkout
 @app.route('/checkout')
+@login_required
 def checkout():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
@@ -209,15 +235,77 @@ def checkout():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql0 = "SELECT CartItem.Product_ID, CartItem.Quantity, Product.Author FROM CartItem, Cart, Product WHERE Cart.Cart_ID=CartItem.Cart_ID AND Cart.User_ID= %s AND CartItem.Product_ID=Product.Product_ID;"
+            sql0 = "SELECT CartItem.Product_ID, CartItem.Quantity, Product.Author FROM CartItem, Cart, Product WHERE Cart.Cart_ID=CartItem.Cart_ID AND Cart.User_ID=%s AND CartItem.Product_ID=Product.Product_ID "
             cursor.execute(sql0, session['user_id'])
         connection.commit()
 
     finally:
         connection.close()
     data = cursor.fetchall()
-    print(data)
-    return render_template('checkout.html', data=data)
+    accountBalance = getAccountBalanace()
+    return render_template('checkout.html', data=data, accountBalance=accountBalance)
+
+@app.route('/removeproduct')
+def removeproduct(Product_ID):
+    connection = pymysql.connect(host='localhost',
+                                     user='oscar',
+                                     password='hejsan123',
+                                     db='BookCommerce',
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "DELETE FROM CartItem WHERE Product_ID = %s AND Cart_ID = %s; "
+            cursor.execute(sql0, (Product_ID, session['Cart_ID']))
+        connection.commit()
+    finally:
+        connection.close()
+    data = cursor.fetchall()
+    return render_template('checkout.html')
+
+def getCart_ID():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "SELECT Cart.Cart_ID FROM Cart WHERE  Cart.User_ID = %s"
+            cursor.execute(sql0, session['user_id'])
+        connection.commit()
+
+    finally:
+        connection.close()
+    data = cursor.fetchone()
+    session['Cart_ID'] = data['Cart_ID']
+    print(session['Cart_ID'])
+
+@app.route('/purchase')
+def delete():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s";
+            cursor.execute(sql0, session['Cart_ID'])
+        connection.commit()
+
+    finally:
+        connection.close()
+    return render_template('index.html')
 
 
 if __name__ == '__main__':

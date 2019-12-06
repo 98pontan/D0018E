@@ -5,9 +5,10 @@
         <h1>Category</h1>
         <section>
 
-            <div class="carousel" role="listbox" style="max-height:300px">
-                <h3>Horror</h3>
-
+            <div class="carousel">
+               {% for i in data %}
+                <h3>{{i['Name']}}</h3>
+                {% endfor %}
             </div>
             <article>
 
