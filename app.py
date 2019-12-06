@@ -6,8 +6,9 @@ import pymysql
 from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
+from Models.AdminForms import CreateProduct
 
-from Models.UserForms import RegisterForm, LoginForm, EditAccountForm
+from Models.UserForms import RegisterForm, LoginForm, EditAccountForm, DeleteAccount
 
 app = Flask(__name__)
 app.secret_key = 'a4b99086395b5b714fb1856c1d6cd709'
@@ -22,14 +23,43 @@ def login_required(f):
             return f(*args, **kwargs)
         else:
             return redirect(url_for('index'))
-
     return decorated_function
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session['privilege'] == 2:
+            # return redirect(url_for('login', next=request.url))
+            return f(*args, **kwargs)
+        else:
+            return redirect(url_for('index'))
+    return decorated_function
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            # get categories
+            cursor.execute("SELECT * FROM Category;")
+            connection.commit()
+            categories = cursor.fetchall()
+
+            #get "new releases"
+            cursor.execute("SELECT * FROM Product ORDER BY Product_ID DESC LIMIT 3;")
+            connection.commit()
+            products = cursor.fetchall()
+
+    finally:
+        connection.close()
+    print(type(categories))
+    return render_template('index.html', categories=categories, products=products)
 
 
 # register
@@ -46,8 +76,8 @@ def register():
         password = sha3_256((form.password.data + form.salt).encode()).hexdigest()
         email = form.email.data
         city = form.city.data
-        postal_code = int(form.postal_code.data)
-        phone = int(form.phone.data)
+        postal_code = form.postal_code.data
+        phone = form.phone.data
         connection = pymysql.connect(host='localhost',
                                      user='oscar',
                                      password='hejsan123',
@@ -83,7 +113,7 @@ def login():
         try:
             with connection.cursor() as cursor:
                 # Create a new record
-                sql = "SELECT User.User_ID, User.Hash, User.Salt FROM User WHERE User.Email = %s;"
+                sql = "SELECT User.User_ID, User.Hash, User.Salt, User.Privilege FROM User WHERE User.Email = %s;"
                 result = cursor.execute(sql, email)
             connection.commit()
         finally:
@@ -95,12 +125,16 @@ def login():
             password = sha3_256((form.password.data + salt).encode()).hexdigest()
             if password == hash:
                 print("password correct")
-                session.permanent = True    #Makes the login valid for 5 minutes as set in config
+                session.permanent = True  # Makes the login valid for 5 minutes as set in config
                 session['logged_in'] = True
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
+
                 getCart_ID()
+
+                session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
+                print(session['privilege'])
                 return redirect(url_for('index'))
             else:
                 error = "Password incorrect"
@@ -142,6 +176,7 @@ def myaccount():
     print(data)
     return render_template('myaccount.html', values=data)
 
+
 @app.route('/myaccount/edit', methods=['GET', 'POST'])
 @login_required
 def editaccount():
@@ -174,10 +209,45 @@ def editaccount():
     else:
         return render_template('editaccount.html', form=form)
 
+
+@app.route('/myaccount/delete')
+@login_required
+def deleteaccount():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "DELETE FROM User WHERE User.User_ID = %s;"
+            cursor.execute(sql, session['user_id'])
+        connection.commit()
+    finally:
+        connection.close()
+    flash('Account Deleted!')
+    session.clear()
+    return redirect(url_for('index'))
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin():
+    form = CreateProduct(request.form)
+    if form.validate and request.method == 'POST':
+        print(request.form.get("selected_category"))
+        return redirect(url_for('index'))
+    elif request.method == 'GET':
+        return render_template('admin.html', form=form)
+
+
 # category
 @app.route('/category')
 # take in an id parameter but for now leave blank
-def category():
+def category(id):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -188,7 +258,9 @@ def category():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
+          #  sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
+
+            sql = "SELECT * FROM Product WHERE Category_ID = id"
             result = cursor.execute(sql)
         connection.commit()
 
@@ -198,6 +270,7 @@ def category():
             data = cursor.fetchall()
             #print(data)
             return render_template('category.html', data=data)
+
 
 
 def getAccountBalanace():
