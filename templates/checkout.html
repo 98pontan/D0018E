@@ -1,23 +1,43 @@
 {% extends 'layout.html' %}
-
+{% from "formhelper.html" import render_field %}
 {% block body %}
     <div class="container">
         <h1>Checkout</h1>
         <section>
 
-            <div class="carousel" role="listbox" style="max-height:300px">
-                <h3></h3>
+            <div class="carousel">
+                {% for i in accountBalance %}
+               <p> Your current saldo is {{i['AccountBalance']}} </p>
+                {% endfor%}
 
             </div>
-            <article>
-                {% for cartItem in data %}
-                    <ul>
-                        <li>{{cartItem.Author}}</li>
-                    </ul>
-                {% endfor %}
-            </article>
-        </section>
 
+            {% for cartItem in data %}
+                <div class="col-sm-4">
+                <h3>Product</h3>
+                    <ul>
+                        <li>Author {{cartItem.Author}}</li>
+                        <li>Quantity {{cartItem.Quantity}} </li>
+                        <li>Product {{cartItem.Product_ID}}</li>
+                        <a href="/removeproduct"> <button type="button" class="btn btn-primary"  value="{{cartItem.Product_ID}}">Remove product</button></a>
+                    </ul>
+                </div>
+            {% endfor %}
+
+            <a href="/purchase"><button class="purchase">Purchase</button></a>
+        </section>
+        <style>
+            .purchase {
+                margin-left:50%;
+                margin-right:50%;
+                border-radius:10px;
+                font-size:30px;
+                background-color:red;
+            }
+            .carousel {
+                font-style:italic;
+            }
+        </style>
     </div>
 <style>
 

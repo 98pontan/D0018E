@@ -6,8 +6,9 @@ import pymysql
 from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
+from Models.AdminForms import CreateProduct
 
-from Models.UserForms import RegisterForm, LoginForm, EditAccountForm
+from Models.UserForms import RegisterForm, LoginForm, EditAccountForm, DeleteAccount
 
 app = Flask(__name__)
 app.secret_key = 'a4b99086395b5b714fb1856c1d6cd709'
@@ -22,9 +23,17 @@ def login_required(f):
             return f(*args, **kwargs)
         else:
             return redirect(url_for('index'))
-
     return decorated_function
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session['privilege'] == 2:
+            # return redirect(url_for('login', next=request.url))
+            return f(*args, **kwargs)
+        else:
+            return redirect(url_for('index'))
+    return decorated_function
 
 @app.route('/')
 @app.route('/index')
@@ -67,8 +76,8 @@ def register():
         password = sha3_256((form.password.data + form.salt).encode()).hexdigest()
         email = form.email.data
         city = form.city.data
-        postal_code = int(form.postal_code.data)
-        phone = int(form.phone.data)
+        postal_code = form.postal_code.data
+        phone = form.phone.data
         connection = pymysql.connect(host='localhost',
                                      user='oscar',
                                      password='hejsan123',
@@ -104,7 +113,7 @@ def login():
         try:
             with connection.cursor() as cursor:
                 # Create a new record
-                sql = "SELECT User.User_ID, User.Hash, User.Salt FROM User WHERE User.Email = %s;"
+                sql = "SELECT User.User_ID, User.Hash, User.Salt, User.Privilege FROM User WHERE User.Email = %s;"
                 result = cursor.execute(sql, email)
             connection.commit()
         finally:
@@ -116,11 +125,16 @@ def login():
             password = sha3_256((form.password.data + salt).encode()).hexdigest()
             if password == hash:
                 print("password correct")
-                session.permanent = True    #Makes the login valid for 5 minutes as set in config
+                session.permanent = True  # Makes the login valid for 5 minutes as set in config
                 session['logged_in'] = True
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
+
+                getCart_ID()
+
+                session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
+                print(session['privilege'])
                 return redirect(url_for('index'))
             else:
                 error = "Password incorrect"
@@ -162,6 +176,7 @@ def myaccount():
     print(data)
     return render_template('myaccount.html', values=data)
 
+
 @app.route('/myaccount/edit', methods=['GET', 'POST'])
 @login_required
 def editaccount():
@@ -194,6 +209,41 @@ def editaccount():
     else:
         return render_template('editaccount.html', form=form)
 
+
+@app.route('/myaccount/delete')
+@login_required
+def deleteaccount():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "DELETE FROM User WHERE User.User_ID = %s;"
+            cursor.execute(sql, session['user_id'])
+        connection.commit()
+    finally:
+        connection.close()
+    flash('Account Deleted!')
+    session.clear()
+    return redirect(url_for('index'))
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin():
+    form = CreateProduct(request.form)
+    if form.validate and request.method == 'POST':
+        print(request.form.get("selected_category"))
+        return redirect(url_for('index'))
+    elif request.method == 'GET':
+        return render_template('admin.html', form=form)
+
+
 # category
 @app.route('/category/<int:Category_ID>')
 # take in an id parameter but for now leave blank
@@ -210,18 +260,25 @@ def category(Category_ID):
             # Create a new record
             sql = "SELECT * FROM Product WHERE Category_ID = %s"
             result = cursor.execute(sql, Category_ID)
+          #  sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
         connection.commit()
 
     finally:
         connection.close()
         if result >= 1:
             data = cursor.fetchall()
+            #print(data)
             return render_template('category.html', data=data)
 
+
 # PRODUCT
-@app.route('/product/<int:Product_ID>')
+#@app.route('/product/<int:Product_ID>')
 # take in an id parameter but for now leave blank
-def product(Product_ID):
+#def product(Product_ID):
+
+
+
+def getAccountBalanace():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -232,19 +289,21 @@ def product(Product_ID):
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "SELECT * FROM Product WHERE Product_ID = %s"
-            result = cursor.execute(sql, Product_ID)
+            sql0 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s;"
+            cursor.execute(sql0, session['user_id'])
         connection.commit()
 
     finally:
         connection.close()
-        if result >= 1:
-            data = cursor.fetchall()
-            return render_template('product.html', data=data)
+
+    accountBalance = cursor.fetchall()
+    return accountBalance
+
 
 
 #checkout
 @app.route('/checkout')
+@login_required
 def checkout():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
@@ -256,15 +315,77 @@ def checkout():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql0 = "SELECT CartItem.Product_ID, CartItem.Quantity, Product.Author FROM CartItem, Cart, Product WHERE Cart.Cart_ID=CartItem.Cart_ID AND Cart.User_ID= %s AND CartItem.Product_ID=Product.Product_ID;"
+            sql0 = "SELECT CartItem.Product_ID, CartItem.Quantity, Product.Author FROM CartItem, Cart, Product WHERE Cart.Cart_ID=CartItem.Cart_ID AND Cart.User_ID=%s AND CartItem.Product_ID=Product.Product_ID "
             cursor.execute(sql0, session['user_id'])
         connection.commit()
 
     finally:
         connection.close()
     data = cursor.fetchall()
-    print(data)
-    return render_template('checkout.html', data=data)
+    accountBalance = getAccountBalanace()
+    return render_template('checkout.html', data=data, accountBalance=accountBalance)
+
+@app.route('/removeproduct')
+def removeproduct(Product_ID):
+    connection = pymysql.connect(host='localhost',
+                                     user='oscar',
+                                     password='hejsan123',
+                                     db='BookCommerce',
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "DELETE FROM CartItem WHERE Product_ID = %s AND Cart_ID = %s; "
+            cursor.execute(sql0, (Product_ID, session['Cart_ID']))
+        connection.commit()
+    finally:
+        connection.close()
+    data = cursor.fetchall()
+    return render_template('checkout.html')
+
+def getCart_ID():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "SELECT Cart.Cart_ID FROM Cart WHERE  Cart.User_ID = %s"
+            cursor.execute(sql0, session['user_id'])
+        connection.commit()
+
+    finally:
+        connection.close()
+    data = cursor.fetchone()
+    session['Cart_ID'] = data['Cart_ID']
+    print(session['Cart_ID'])
+
+@app.route('/purchase')
+def delete():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s";
+            cursor.execute(sql0, session['Cart_ID'])
+        connection.commit()
+
+    finally:
+        connection.close()
+    return render_template('index.html')
 
 
 if __name__ == '__main__':
