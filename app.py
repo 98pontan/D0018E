@@ -6,13 +6,13 @@ import pymysql
 from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
-from Models.AdminForms import CreateProduct
+from Models.AdminForms import CreateProduct, CreateCategory
 
 from Models.UserForms import RegisterForm, LoginForm, EditAccountForm, DeleteAccount
 
 app = Flask(__name__)
 app.secret_key = 'a4b99086395b5b714fb1856c1d6cd709'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=15)
 
 
 def login_required(f):
@@ -236,21 +236,21 @@ def deleteaccount():
 @login_required
 @admin_required
 def admin():
-    form = CreateProduct(request.form)
-    if form.validate and request.method == 'POST':
+    create_product = CreateProduct(request.form)
+    create_category = CreateCategory(request.form)
+    if CreateProduct.validate and request.method == 'POST':
         category = request.form.get("selected_category")
-        price = form.price.data
-        discount = form.discount.data
-        author = form.author.data
-        description = form.description.data
-        isbn = form.isbn.data
-        title = form.title.data
-        units_in_stock = form.units_in_stock.data
-        language = form.language.data
-        number_of_pages = form.number_of_pages.data
-        publicer = form.publicer.data
+        price = create_product.price.data
+        discount = create_product.discount.data
+        author = create_product.author.data
+        description = create_product.description.data
+        isbn = create_product.isbn.data
+        title = create_product.title.data
+        units_in_stock = create_product.units_in_stock.data
+        language = create_product.language.data
+        number_of_pages = create_product.number_of_pages.data
+        publicer = create_product.publicer.data
         print(request.form.get("selected_category"))
-
         connection = pymysql.connect(host='localhost',
                                      user='oscar',
                                      password='hejsan123',
@@ -291,7 +291,7 @@ def admin():
         flash('Product created!')
         return redirect(url_for('index'))
     elif request.method == 'GET':
-        return render_template('admin.html', form=form)
+        return render_template('admin.html', create_product=create_product, create_category=create_category)
 
 #def createproduct():
 

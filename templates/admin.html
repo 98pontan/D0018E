@@ -5,29 +5,35 @@
         <div class="col">
             <h3>Create product</h3>
         <form method="POST" action="">
-            {# form.hidden_tag() #}
             <div class="form-group">
-                {{ render_field(form.author) }}
-                {{ render_field(form.description) }}
-                {{ render_field(form.discount) }}
-                {{ render_field(form.isbn) }}
-                {{ render_field(form.title) }}
-                {{ render_field(form.price) }}
-                {{ render_field(form.units_in_stock) }}
-                {{ render_field(form.language) }}
-                {{ render_field(form.number_of_pages) }}
-                {{ render_field(form.publicer) }}
+                {{ render_field(create_product.author) }}
+                {{ render_field(create_product.description) }}
+                {{ render_field(create_product.discount) }}
+                {{ render_field(create_product.isbn) }}
+                {{ render_field(create_product.title) }}
+                {{ render_field(create_product.price) }}
+                {{ render_field(create_product.units_in_stock) }}
+                {{ render_field(create_product.language) }}
+                {{ render_field(create_product.number_of_pages) }}
+                {{ render_field(create_product.publicer) }}
                     <select name="selected_category">
-                        {% for i in form.categories %}
+                        {% for i in create_product.categories %}
                             <option value="{{ i['Category_ID'] }}">{{ i['Name'] }}</option>
                         {% endfor %}
                     </select>
                 </div>
-            {{ form.submit(class="btn btn-primary btn-sm") }}
+            {{ create_product.submit(class="btn btn-primary btn-sm") }}
         </form>
     </div>
         <div class="col">
-            <p>Hejsan</p>
+            <h3>Create product</h3>
+            <form method="POST" action="">
+                <div class="form-group">
+                    {{ render_field(create_category.name) }}
+                    {{ render_field(create_category.description) }}
+                    {{ create_product.submit(class="btn btn-primary btn-sm") }}
+                </div>
+            </form>
         </div>
     </div>
 {% endblock %}
