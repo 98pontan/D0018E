@@ -296,9 +296,9 @@ def admin():
 #def createproduct():
 
 # category
-@app.route('/category')
+@app.route('/category/<int:Category_ID>')
 # take in an id parameter but for now leave blank
-def category(id):
+def category(Category_ID):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -309,10 +309,9 @@ def category(id):
     try:
         with connection.cursor() as cursor:
             # Create a new record
+            sql = "SELECT * FROM Product WHERE Category_ID = %s"
+            result = cursor.execute(sql, Category_ID)
           #  sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
-
-            sql = "SELECT * FROM Product WHERE Category_ID = id"
-            result = cursor.execute(sql)
         connection.commit()
 
     finally:
@@ -321,6 +320,12 @@ def category(id):
             data = cursor.fetchall()
             #print(data)
             return render_template('category.html', data=data)
+
+
+# PRODUCT
+#@app.route('/product/<int:Product_ID>')
+# take in an id parameter but for now leave blank
+#def product(Product_ID):
 
 
 
@@ -341,8 +346,10 @@ def getAccountBalanace():
 
     finally:
         connection.close()
+
     accountBalance = cursor.fetchall()
     return accountBalance
+
 
 
 #checkout
