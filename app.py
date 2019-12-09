@@ -195,9 +195,9 @@ def editaccount():
         return render_template('editaccount.html', form=form)
 
 # category
-@app.route('/category')
+@app.route('/category/<int:Category_ID>')
 # take in an id parameter but for now leave blank
-def category(id):
+def category(Category_ID):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -208,8 +208,8 @@ def category(id):
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "SELECT * FROM Product WHERE Category_ID = id"
-            result = cursor.execute(sql)
+            sql = "SELECT * FROM Product WHERE Category_ID = %s"
+            result = cursor.execute(sql, Category_ID)
         connection.commit()
 
     finally:
@@ -217,6 +217,32 @@ def category(id):
         if result >= 1:
             data = cursor.fetchall()
             return render_template('category.html', data=data)
+
+# PRODUCT
+@app.route('/product/<int:Product_ID>')
+# take in an id parameter but for now leave blank
+def product(Product_ID):
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "SELECT * FROM Product WHERE Product_ID = %s"
+            result = cursor.execute(sql, Product_ID)
+        connection.commit()
+
+    finally:
+        connection.close()
+        if result >= 1:
+            data = cursor.fetchall()
+            return render_template('product.html', data=data)
+
+
 #checkout
 @app.route('/checkout')
 def checkout():

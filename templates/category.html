@@ -5,24 +5,25 @@
         <h1>Category</h1>
         <section>
 
-            <div class="carousel" role="listbox" style="max-height:300px">
-                <h3>Horror</h3>
-
+            <div class="carousel">
+               {% for i in data %}
+                <h3>{{i['Name']}}</h3>
+                {% endfor %}
             </div>
             <article>
 
                 {% for category in data %}
                     <ul>
+                        <li><a href="..\product\{{ category['Product_ID']}}">Title: {{category.Title}}</a></li>
                         <li>Author: {{category.Author}}</li>
-                        <li>Price: {{category.Price}}</li>
+                        <li>Price: {{category.Price}} SEK</li>
                         <li>Units in Stock: {{category.UnitsInStock}}</li>
                         <li>Pages: {{category.NumberOfPages}}</li>
                         <li>Publisher: {{category.Publicer}}</li>
                         <li>Language: {{category.Language}}</li>
-                        <button class="cartButton">Add to cart</button>
-                        <a href="/checkout"> <button>Buy Now</button> </a>
+                        <a href="..\addItem\{{category['Product_ID']}}"> <button class="cartButton">Add to cart</button> </a>
+                        <a href="..\addcheckout\{{category['Product_ID']}}"> <button>Buy Now</button> </a>
                     </ul>
-
 
                 {% endfor %}
             </article>
