@@ -39,3 +39,9 @@ class CreateProduct(Form):
     number_of_pages = StringField('Number of pages')
     language = StringField('Language')
     submit = SubmitField()
+
+
+class CreateCategory(Form):
+    name = StringField('Name')
+    description = StringField('Description')
+    submit = SubmitField()

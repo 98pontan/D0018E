@@ -1,38 +1,33 @@
 {% extends 'layout.html' %}
 {% from "formhelper.html" import render_field %}
 {% block body %}
-    <!--
-    <div class="btn-group">
-        <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-                aria-expanded="false">
-            Categories
-        </button>
-        <div class="dropdown-menu">
-            {% for i in categories %}
-                <a class="dropdown-item" href="..\category\{{i['Category_ID']}}">{{i['Name']}}</a>
-            {% endfor %}
+    <div class="row">
+        <div class="col">
+            <h3>Create product</h3>
+        <form method="POST" action="">
+            {# form.hidden_tag() #}
+            <div class="form-group">
+                {{ render_field(form.author) }}
+                {{ render_field(form.description) }}
+                {{ render_field(form.discount) }}
+                {{ render_field(form.isbn) }}
+                {{ render_field(form.title) }}
+                {{ render_field(form.price) }}
+                {{ render_field(form.units_in_stock) }}
+                {{ render_field(form.language) }}
+                {{ render_field(form.number_of_pages) }}
+                {{ render_field(form.publicer) }}
+                    <select name="selected_category">
+                        {% for i in form.categories %}
+                            <option value="{{ i['Category_ID'] }}">{{ i['Name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {{ form.submit(class="btn btn-primary btn-sm") }}
+        </form>
+    </div>
+        <div class="col">
+            <p>Hejsan</p>
         </div>
     </div>
-    -->
-    <form method="POST" action="">
-        {# form.hidden_tag() #}
-        <div class="form-group">
-            {{ render_field(form.author) }}
-            {{ render_field(form.description) }}
-            {{ render_field(form.discount) }}
-            {{ render_field(form.isbn) }}
-            {{ render_field(form.title) }}
-            {{ render_field(form.price) }}
-            {{ render_field(form.units_in_stock) }}
-            {{ render_field(form.language) }}
-            {{ render_field(form.number_of_pages) }}
-            {{ render_field(form.publicer) }}
-                <select name="selected_category">
-                    {% for i in form.categories %}
-                        <option value="{{ i['Category_ID'] }}">{{ i['Name'] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        {{ form.submit(class="btn btn-primary btn-sm") }}
-    </form>
 {% endblock %}

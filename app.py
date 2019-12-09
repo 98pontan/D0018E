@@ -130,7 +130,7 @@ def login():
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
 
-                getCart_ID()
+                #getCart_ID()
 
                 session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
@@ -238,11 +238,62 @@ def deleteaccount():
 def admin():
     form = CreateProduct(request.form)
     if form.validate and request.method == 'POST':
+        category = request.form.get("selected_category")
+        price = form.price.data
+        discount = form.discount.data
+        author = form.author.data
+        description = form.description.data
+        isbn = form.isbn.data
+        title = form.title.data
+        units_in_stock = form.units_in_stock.data
+        language = form.language.data
+        number_of_pages = form.number_of_pages.data
+        publicer = form.publicer.data
         print(request.form.get("selected_category"))
+
+        connection = pymysql.connect(host='localhost',
+                                     user='oscar',
+                                     password='hejsan123',
+                                     db='BookCommerce',
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.DictCursor)
+        try:
+            with connection.cursor() as cursor:
+                # Create a new record
+                sql = """INSERT INTO Product
+                        (`Category_ID`,
+                        `Price`,
+                        `Discount`,
+                        `UnitsInStock`,
+                        `Description`,
+                        `ISBN`,
+                        `Author`,
+                        `Publicer`,
+                        `NumberOfPages`,
+                        `Language`,
+                        `Title`)
+                        VALUES
+                        (%s, 
+                        %s, 
+                        %s, 
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s);"""
+                cursor.execute(sql, (category, price, discount, units_in_stock, description, isbn, author, publicer, number_of_pages, language, title))
+            connection.commit()
+        finally:
+            connection.close()
+        flash('Product created!')
         return redirect(url_for('index'))
     elif request.method == 'GET':
         return render_template('admin.html', form=form)
 
+#def createproduct():
 
 # category
 @app.route('/category')
