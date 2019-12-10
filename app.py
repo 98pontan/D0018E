@@ -247,7 +247,7 @@ def admin():
 # category
 @app.route('/category')
 # take in an id parameter but for now leave blank
-def category(id):
+def category():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -258,20 +258,44 @@ def category(id):
     try:
         with connection.cursor() as cursor:
             # Create a new record
-          #  sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
-
-            sql = "SELECT * FROM Product WHERE Category_ID = id"
+            sql = "SELECT * FROM Product WHERE Category_ID = 1"
             result = cursor.execute(sql)
+            connection.commit()
+            data = cursor.fetchall()
+
+            sql1 = "SELECT Category.Name FROM Category WHERE Category_ID = 1"
+            cursor.execute(sql1)
+            connection.commit()
+            name = cursor.fetchall()
+    finally:
+        connection.close()
+        if result >= 1:
+
+            #print(data)
+            return render_template('category.html', data=data, name=name)
+
+@app.route('/addItem/<int:Product_ID>')
+@login_required
+def addItem(Product_ID):
+
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "INSERT INTO CartItem(Product_ID, Quantity, Cart_ID) VALUES(%s, 1, %s);"
+            cursor.execute(sql, (Product_ID, session['Cart_ID']))
         connection.commit()
 
     finally:
         connection.close()
-        if result >= 1:
-            data = cursor.fetchall()
-            #print(data)
-            return render_template('category.html', data=data)
-
-
+        flash("Product added to cart")
+        return redirect(url_for('category'))
 
 def getAccountBalanace():
     connection = pymysql.connect(host='localhost',
@@ -293,9 +317,30 @@ def getAccountBalanace():
     accountBalance = cursor.fetchall()
     return accountBalance
 
+#pre-checkout to add products to cart
+@app.route('/addcheckout/<int:Product_ID>')
+@login_required
+def addCheckout(Product_ID):
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
 
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "INSERT INTO CartItem(Product_ID, Quantity, Cart_ID) VALUES(%s, 1, %s);"
+            cursor.execute(sql, (Product_ID, session['Cart_ID']))
+        connection.commit()
+
+    finally:
+        connection.close()
+        flash("Product added to cart")
+        return redirect(url_for('checkout'))
 #checkout
-@app.route('/checkout')
+@app.route("/checkout")
 @login_required
 def checkout():
     connection = pymysql.connect(host='localhost',
@@ -308,17 +353,19 @@ def checkout():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql0 = "SELECT CartItem.Product_ID, CartItem.Quantity, Product.Author FROM CartItem, Cart, Product WHERE Cart.Cart_ID=CartItem.Cart_ID AND Cart.User_ID=%s AND CartItem.Product_ID=Product.Product_ID "
+            sql0 = "SELECT CartItem.Product_ID, CartItem.Quantity, Product.Author, Product.Title, Product.Price FROM CartItem, Cart, Product WHERE Cart.Cart_ID=CartItem.Cart_ID AND Cart.User_ID=%s AND CartItem.Product_ID=Product.Product_ID AND CartItem.Product_ID=Product.Product_ID AND CartItem.Product_ID=Product.Product_ID"
+
             cursor.execute(sql0, session['user_id'])
-        connection.commit()
+            connection.commit()
+            data = cursor.fetchall()
 
     finally:
         connection.close()
-    data = cursor.fetchall()
     accountBalance = getAccountBalanace()
     return render_template('checkout.html', data=data, accountBalance=accountBalance)
 
-@app.route('/removeproduct')
+@app.route('/removeproduct/<int:Product_ID>')
+@login_required
 def removeproduct(Product_ID):
     connection = pymysql.connect(host='localhost',
                                      user='oscar',
@@ -336,7 +383,8 @@ def removeproduct(Product_ID):
     finally:
         connection.close()
     data = cursor.fetchall()
-    return render_template('checkout.html')
+    flash("Product removed")
+    return redirect(url_for('checkout'))
 
 def getCart_ID():
     connection = pymysql.connect(host='localhost',
@@ -357,10 +405,11 @@ def getCart_ID():
         connection.close()
     data = cursor.fetchone()
     session['Cart_ID'] = data['Cart_ID']
-    print(session['Cart_ID'])
+    return session['Cart_ID']
 
-@app.route('/purchase')
-def delete():
+
+@app.route('/purchase/<int:AccountBalance>')
+def purchase(AccountBalance):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -368,14 +417,17 @@ def delete():
                                  charset='utf8',
                                  cursorclass=pymysql.cursors.DictCursor)
 
-
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s";
-            cursor.execute(sql0, session['Cart_ID'])
-        connection.commit()
+            sql1 = "SELECT CartItem.Product_ID FROM CartItem WHERE Cart_ID = %s "
+            result = cursor.execute(sql1, session['Cart_ID'])
+            connection.commit()
+            data = cursor.fetchall()
 
+            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s"
+            cursor.execute(sql0, session['Cart_ID'])
+            connection.commit()
     finally:
         connection.close()
     return render_template('index.html')

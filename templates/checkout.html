@@ -16,15 +16,19 @@
                 <div class="col-sm-4">
                 <h3>Product</h3>
                     <ul>
+                        <li>Title {{cartItem.Title}}</li>
                         <li>Author {{cartItem.Author}}</li>
+                        <li>Price {{cartItem.Price}}</li>
                         <li>Quantity {{cartItem.Quantity}} </li>
                         <li>Product {{cartItem.Product_ID}}</li>
-                        <a href="/removeproduct"> <button type="button" class="btn btn-primary"  value="{{cartItem.Product_ID}}">Remove product</button></a>
+                        <a href="..\removeproduct\{{cartItem['Product_ID']}}"> <button>Remove product</button></a>
                     </ul>
                 </div>
             {% endfor %}
+            {% for i in accountBalance %}
+            <a href="..\purchase\{{i['Product_ID']}}"><button class="purchase">Purchase</button></a>
+            {% endfor %}
 
-            <a href="/purchase"><button class="purchase">Purchase</button></a>
         </section>
         <style>
             .purchase {
