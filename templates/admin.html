@@ -22,16 +22,16 @@
                         {% endfor %}
                     </select>
                 </div>
-            {{ create_product.submit(class="btn btn-primary btn-sm") }}
+                <input type="submit" name="btn" value="Create Product" class="btn btn-primary btn-sm">
         </form>
     </div>
         <div class="col">
-            <h3>Create product</h3>
+            <h3>Create category</h3>
             <form method="POST" action="">
                 <div class="form-group">
                     {{ render_field(create_category.name) }}
                     {{ render_field(create_category.description) }}
-                    {{ create_product.submit(class="btn btn-primary btn-sm") }}
+                    <input type="submit" name="btn" value="Create Category" class="btn btn-primary btn-sm">
                 </div>
             </form>
         </div>
