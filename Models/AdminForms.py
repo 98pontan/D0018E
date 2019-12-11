@@ -38,4 +38,10 @@ class CreateProduct(Form):
     publicer = StringField('Publicer')
     number_of_pages = StringField('Number of pages')
     language = StringField('Language')
-    submit = SubmitField()
+    #submit = SubmitField()
+
+
+class CreateCategory(Form):
+    name = StringField('Name')
+    description = StringField('Description')
+    #submit = SubmitField()
