@@ -16,10 +16,12 @@
                     <ul>
                         <li>Title: {{product.Title}}</li>
                         <li>Author: {{product.Author}}</li>
+                        <li>Category: {{ product.Category_ID }}</li>
                         <li>Price: {{product.Price}} SEK</li>
                         <li>Units in Stock: {{product.UnitsInStock}}</li>
                         <li>Pages: {{product.NumberOfPages}}</li>
                         <li>Publisher: {{product.Publicer}}</li>
+                        <li>ISBM: {{ product.ISBN }}</li>
                         <li>Language: {{product.Language}}</li>
                         <a href="..\addItem\{{product['Product_ID']}}"> <button class="cartButton">Add to cart</button> </a>
                         <a href="..\addcheckout\{{product['Product_ID']}}"> <button>Buy Now</button> </a>

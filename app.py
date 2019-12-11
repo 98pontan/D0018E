@@ -257,24 +257,57 @@ def category(Category_ID):
 
     try:
         with connection.cursor() as cursor:
-            # Create a new record
+
+            # get all products from Category
             sql = "SELECT * FROM Product WHERE Category_ID = %s"
             result = cursor.execute(sql, Category_ID)
+            connection.commit()
+            product = cursor.fetchall()
+
+            # get "new releases"
+            sql2 = "SELECT Category.Name FROM Category WHERE Category_ID = %s"
+            result2 = cursor.execute(sql2, Category_ID)
+            connection.commit()
+            categoryName = cursor.fetchone()
+
+
+    finally:
+        connection.close()
+        if result >= 1 and result2 >= 1:
+            #print(categoryName)
+            return render_template('category.html', product=product, categoryName=categoryName)
+
+
+# PRODUCT
+@app.route('/product/<int:Product_ID>')
+# take in an id parameter but for now leave blank
+def product(Product_ID):
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = "SELECT * FROM Product, Category WHERE Product.Product_ID = %s AND Category.Category_ID = Product.Category_ID "
+            result = cursor.execute(sql, Product_ID)
           #  sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
-        connection.commit()
+            connection.commit()
+
+            # get categories
+            #cursor.execute("SELECT * FROM Category;")
+            #connection.commit()
+            #categories = cursor.fetchall()
 
     finally:
         connection.close()
         if result >= 1:
             data = cursor.fetchall()
             #print(data)
-            return render_template('category.html', data=data)
-
-
-# PRODUCT
-#@app.route('/product/<int:Product_ID>')
-# take in an id parameter but for now leave blank
-#def product(Product_ID):
+            return render_template('product.html', data=data)
 
 
 
