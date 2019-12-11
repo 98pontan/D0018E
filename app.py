@@ -6,13 +6,13 @@ import pymysql
 from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
-from Models.AdminForms import CreateProduct
+from Models.AdminForms import CreateProduct, CreateCategory
 
 from Models.UserForms import RegisterForm, LoginForm, EditAccountForm, DeleteAccount
 
 app = Flask(__name__)
 app.secret_key = 'a4b99086395b5b714fb1856c1d6cd709'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=15)
 
 
 def login_required(f):
@@ -130,7 +130,7 @@ def login():
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
 
-                getCart_ID()
+                #getCart_ID()
 
                 session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
@@ -236,18 +236,135 @@ def deleteaccount():
 @login_required
 @admin_required
 def admin():
-    form = CreateProduct(request.form)
-    if form.validate and request.method == 'POST':
-        print(request.form.get("selected_category"))
-        return redirect(url_for('index'))
+    create_product = CreateProduct(request.form)
+    create_category = CreateCategory(request.form)
+    if CreateProduct.validate and request.method == 'POST' and request.form['btn'] == 'Create Product':
+        createproduct(create_product)
+        flash('Product created!')
+        return redirect(url_for('admin'))
+    elif CreateCategory.validate and request.method == 'POST' and request.form['btn'] == 'Create Category':
+        createcategory(create_category)
+        flash('Category created!!')
+        return redirect(url_for('admin'))
     elif request.method == 'GET':
-        return render_template('admin.html', form=form)
+        return render_template('admin.html', create_product=create_product, create_category=create_category)
 
+
+def createcategory(create_category):
+    name = create_category.name.data
+    description = create_category.description.data
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = """INSERT INTO Category
+                    (`Name`,
+                    `Description`)
+                    VALUES
+                    (%s,
+                    %s);"""
+            cursor.execute(sql, (name, description))
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def createproduct(create_product):
+    category = request.form.get("selected_category")
+    price = create_product.price.data
+    discount = create_product.discount.data
+    author = create_product.author.data
+    description = create_product.description.data
+    isbn = create_product.isbn.data
+    title = create_product.title.data
+    units_in_stock = create_product.units_in_stock.data
+    language = create_product.language.data
+    number_of_pages = create_product.number_of_pages.data
+    publicer = create_product.publicer.data
+    print(request.form.get("selected_category"))
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql = """INSERT INTO Product
+                      (`Category_ID`,
+                      `Price`,
+                      `Discount`,
+                      `UnitsInStock`,
+                      `Description`,
+                      `ISBN`,
+                      `Author`,
+                      `Publicer`,
+                      `NumberOfPages`,
+                      `Language`,
+                      `Title`)
+                      VALUES
+                      (%s, 
+                      %s, 
+                      %s, 
+                      %s,
+                      %s,
+                      %s,
+                      %s,
+                      %s,
+                      %s,
+                      %s,
+                      %s);"""
+            cursor.execute(sql, (
+            category, price, discount, units_in_stock, description, isbn, author, publicer, number_of_pages, language,
+            title))
+        connection.commit()
+    finally:
+        connection.close()
 
 # category
-@app.route('/category')
+@app.route('/category/<int:Category_ID>')
 # take in an id parameter but for now leave blank
-def category():
+def category(Category_ID):
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+
+            # get all products from Category
+            sql = "SELECT * FROM Product WHERE Category_ID = %s"
+            result = cursor.execute(sql, Category_ID)
+            connection.commit()
+            product = cursor.fetchall()
+
+            # get "new releases"
+            sql2 = "SELECT Category.Name FROM Category WHERE Category_ID = %s"
+            result2 = cursor.execute(sql2, Category_ID)
+            connection.commit()
+            categoryName = cursor.fetchone()
+
+
+    finally:
+        connection.close()
+        if result >= 1 and result2 >= 1:
+            #print(categoryName)
+            return render_template('category.html', product=product, categoryName=categoryName)
+
+
+# PRODUCT
+@app.route('/product/<int:Product_ID>')
+# take in an id parameter but for now leave blank
+def product(Product_ID):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -258,21 +375,24 @@ def category():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql = "SELECT * FROM Product WHERE Category_ID = 1"
-            result = cursor.execute(sql)
+            sql = "SELECT * FROM Product, Category WHERE Product.Product_ID = %s AND Category.Category_ID = Product.Category_ID "
+            result = cursor.execute(sql, Product_ID)
+          #  sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
             connection.commit()
-            data = cursor.fetchall()
 
-            sql1 = "SELECT Category.Name FROM Category WHERE Category_ID = 1"
-            cursor.execute(sql1)
-            connection.commit()
-            name = cursor.fetchall()
+            # get categories
+            #cursor.execute("SELECT * FROM Category;")
+            #connection.commit()
+            #categories = cursor.fetchall()
+
     finally:
         connection.close()
         if result >= 1:
-
+            data = cursor.fetchall()
             #print(data)
-            return render_template('category.html', data=data, name=name)
+            return render_template('product.html', data=data)
+
+
 
 @app.route('/addItem/<int:Product_ID>')
 @login_required
@@ -314,6 +434,7 @@ def getAccountBalanace():
 
     finally:
         connection.close()
+
     accountBalance = cursor.fetchall()
     return accountBalance
 
@@ -335,10 +456,14 @@ def addCheckout(Product_ID):
             cursor.execute(sql, (Product_ID, session['Cart_ID']))
         connection.commit()
 
+
     finally:
         connection.close()
         flash("Product added to cart")
         return redirect(url_for('checkout'))
+
+
+
 #checkout
 @app.route("/checkout")
 @login_required

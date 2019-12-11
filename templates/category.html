@@ -1,44 +1,36 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <div class="container">
-        <h1>Category</h1>
-        <section>
+<div class="container">
+    <h1>Category</h1>
+    <section>
 
-            <div class="carousel">
-               {% for i in name %}
-                <h3>{{i['Name']}}</h3>
-                {% endfor %}
-            </div>
-            <article>
+        <div class="carousel">
 
-                {% for category in data %}
-                    <ul>
-                        <li>Title: {{category.Title}}</li>
-                        <li>Author: {{category.Author}}</li>
-                        <li>Price: {{category.Price}}</li>
-                        <li>
-                        <form action="">
-                            Quantity : <input type="number" name="quantity" min="1" max="50">
-                        </form>
-                        </li>
-                        <li>Units in Stock: {{category.UnitsInStock}}</li>
-                        <li>Pages: {{category.NumberOfPages}}</li>
-                        <li>Publisher: {{category.Publicer}}</li>
-                        <li>Language: {{category.Language}}</li>
-                        <a href="..\addItem\{{category['Product_ID']}}"> <button class="cartButton">Add to cart</button> </a>
-                        <a href="..\addcheckout\{{category['Product_ID']}}"> <button>Buy Now</button> </a>
-                    </ul>
 
-                {% endfor %}
-            </article>
-
-        <div>
-
+            <h3>{{categoryName.Name}}</h3>
         </div>
 
-        </section>
-    </div>
+
+        {% for product in product %}
+        <article class="card card-body" style="width: 20rem;">
+            <a href="..\product\{{ product['Product_ID']}}"><h5 class="card-title">{{product.Title}}</h5></a>
+            <p class="card-text">Author: {{product.Author}}</p>
+            <p class="card-text">Price: {{product.Price}} SEK</p>
+            <div class="row">
+                <div class="mx-auto "><a href="..\addItem\{{product['Product_ID']}}">
+                    <button class="btn btn-primary">Add to cart</button>
+                </a></div>
+                <div class="mx-auto "><a href="..\addcheckout\{{product['Product_ID']}}">
+                    <button class="btn btn-primary">Buy Now</button>
+                </a></div>
+            </div>
+        </article>
+        {% endfor %}
+
+
+    </section>
+</div>
 <style>
     table{
         width:100%;
@@ -48,5 +40,6 @@
         text-align:left;
         padding:8px;
     }
+
 </style>
 {% endblock %}

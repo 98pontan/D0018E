@@ -1,34 +1,47 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <div class="jumbotron text-center">
-    <h1>Welcome to our Book Shop!</h1>
-    <h2>Categories</h2>
-    {% for categories in categories %}
-        <article class="media content-section">
-            <div class="media-body">
-                <div class="article-metadata">
-                    <a href="/category" id="{{ categories.Category_ID }}">
-                        <button type="button" class="btn btn-dark">{{ categories.Name }}</button>
-                    </a>
-                    <p>{{ categories.Description }}</p>
+
+    <div class="container">
+        <div class="row">
+            <!-- SIDEBAR COLUMN -->
+            <div class="col-3">
+                <h2>Categories</h2>
+                <div>
+                    {% for categories in categories %}
+                        <article>
+                            <div>
+                                <div>
+                                    <a href="..\category\{{categories['Category_ID']}}" id="{{ categories.Category_ID }}" class="list-group-item list-group-item-action">
+                                        {{ categories.Name }}
+
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
                 </div>
             </div>
-        </article>
-    {% endfor %}
-    <h2>New Releases</h2>
-    {% for products in products %}
-        <article class="media content-section">
-            <div class="media-body">
-                <div class="article-metadata">
-                    <a href="category">
-                        <button type="button" class="btn btn-dark">{{ products.Description }}</button> <!-- SKALL VARA TITEL -->
-                    </a>
-                    <p>{{ products.Author }}</p>
-                    <p>{{ products.Description }}</p>
+
+            <!-- CONTENT -->
+            <div class="col-9">
+                <h1 class="text-center">Welcome to our Book Shop!</h1>
+                <div class="text-center">
+                    <h2>New Releases</h2>
+                    {% for products in products %}
+                            <div>
+                                <div>
+                                    <a href="..\product\{{products['Product_ID']}}">
+                                        <button type="button" class="btn btn-dark">{{ products.Title }}</button>
+                                    </a>
+                                    <p>{{ products.Author }}</p>
+                                    <p>{{ products.Description }}</p>
+                                </div>
+                            </div>
+                    {% endfor %}
                 </div>
             </div>
-        </article>
-    {% endfor %}
+        </div>
     </div>
+    <!--<div class="jumbotron">-->
 {% endblock %}
