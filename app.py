@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from click.utils import PacifyFlushWrapper
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request, g
 import pymysql.cursors
 import pymysql
@@ -129,9 +130,7 @@ def login():
                 session['logged_in'] = True
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
-
-                #getCart_ID()
-
+                getCart_ID()
                 session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
                 print(session['privilege'])
@@ -397,7 +396,6 @@ def product(Product_ID):
 @app.route('/addItem/<int:Product_ID>')
 @login_required
 def addItem(Product_ID):
-
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -442,6 +440,8 @@ def getAccountBalanace():
 @app.route('/addcheckout/<int:Product_ID>')
 @login_required
 def addCheckout(Product_ID):
+    print(Product_ID)
+    print(session, session['Cart_ID'])
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -454,9 +454,8 @@ def addCheckout(Product_ID):
             # Create a new record
             sql = "INSERT INTO CartItem(Product_ID, Quantity, Cart_ID) VALUES(%s, 1, %s);"
             cursor.execute(sql, (Product_ID, session['Cart_ID']))
+
         connection.commit()
-
-
     finally:
         connection.close()
         flash("Product added to cart")
@@ -530,7 +529,7 @@ def getCart_ID():
         connection.close()
     data = cursor.fetchone()
     session['Cart_ID'] = data['Cart_ID']
-    return session['Cart_ID']
+    print(session['Cart_ID'])
 
 
 @app.route('/purchase/<int:AccountBalance>')
