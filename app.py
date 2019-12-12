@@ -8,6 +8,7 @@ from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
 from Models.AdminForms import CreateProduct, CreateCategory
+from Models.ReviewForms import MakeReview
 
 from Models.UserForms import RegisterForm, LoginForm, EditAccountForm, DeleteAccount
 
@@ -23,7 +24,8 @@ def login_required(f):
             # return redirect(url_for('login', next=request.url))
             return f(*args, **kwargs)
         else:
-            return redirect(url_for('index'))
+            flash("Please login")
+            return redirect(url_for('login'))
     return decorated_function
 
 def admin_required(f):
@@ -37,7 +39,7 @@ def admin_required(f):
     return decorated_function
 
 @app.route('/')
-@app.route('/index')
+@app.route('/index', methods=['GET', 'POST'])
 def index():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
@@ -59,7 +61,7 @@ def index():
 
     finally:
         connection.close()
-    print(type(categories))
+   # print(type(categories))
     return render_template('index.html', categories=categories, products=products)
 
 
@@ -348,6 +350,33 @@ def createproduct(create_product):
     finally:
         connection.close()
 
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    with connection.cursor() as cursor:
+        if request.method == "POST":
+            book = request.form['book']
+            print(book)
+            # search with Title or Author
+            sql = "SELECT Product.Title, Product.Author, Product.Price, Product.Product_ID FROM Product WHERE Title LIKE %s OR Author LIKE %s"
+            cursor.execute(sql, (book, book))
+
+            connection.commit()
+            data = cursor.fetchall()
+            print("1", data)
+
+            return render_template('search.html', data=data)
+
+        connection.close()
+        return render_template('search.html')
+
 # category
 @app.route('/category/<int:Category_ID>')
 # take in an id parameter but for now leave blank
@@ -388,6 +417,7 @@ def category(Category_ID):
 @app.route('/product/<int:Product_ID>')
 # take in an id parameter but for now leave blank
 def product(Product_ID):
+    form = MakeReview(request.form)
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -407,7 +437,31 @@ def product(Product_ID):
         if result >= 1:
             data = cursor.fetchall()
             #print(data)
-            return render_template('product.html', data=data)
+            return render_template('product.html', data=data, form=form)
+
+@app.route('/product/<int:Product_ID>', methods=['POST'])
+@login_required
+def makereview(Product_ID):
+    print("yes")
+
+    """if (request.method == 'POST') and form.validate():
+            user_id = session['user_id']
+            review = form.review.data
+            rating = form.review.data
+            connection = pymysql.connect(host='localhost',
+                                         user='oscar',
+                                         password='hejsan123',
+                                         db='BookCommerce',
+                                         charset='utf8',
+                                         cursorclass=pymysql.cursors.DictCursor)
+            try:
+                with connection.cursor() as cursor:
+                    # Create new record
+                    sql = "INSERT INTO Review"
+                    """
+
+
+    return product(Product_ID)
 
 
 
