@@ -623,11 +623,21 @@ def purchase():
             sql = "INSERT INTO Orders(Orders.User_ID, Orders.Phone, Orders.Address, Orders.City, Orders.PostalCode, Orders.Country) SELECT User.User_ID, User.Phone, User.Address, User.City, User.PostalCode, User.Country FROM User WHERE User.User_ID = %s;"
             cursor.execute(sql, session['user_id'])
             connection.commit()
-            """
-            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
-            cursor.execute(sql0, session['Cart_ID'])
+
+            sql1 = "SELECT MAX(Orders.Order_ID) FROM Orders WHERE Orders.User_ID = %s;"
+            cursor.execute(sql1, session['user_id'])
             connection.commit()
-            """
+            data = cursor.fetchone()
+            session['order_id'] = data['MAX(Orders.Order_ID)']
+
+            sql2 = "INSERT INTO OrderProduct(OrderProduct.Order_ID, OrderProduct.Product_ID, OrderProduct.Quantity, OrderProduct.Price) SELECT %s, CartItem.Product_ID, CartItem.Quantity, Product.Price FROM CartItem, Product, Orders WHERE Orders.Order_ID = %s AND Cart_ID = %s AND CartItem.Product_ID = Product.Product_ID;"
+            cursor.execute(sql2, (session['order_id'], session['order_id'], session['Cart_ID']))
+            connection.commit()
+
+            sql3 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
+            cursor.execute(sql3, session['Cart_ID'])
+            connection.commit()
+
     finally:
         connection.close()
     return render_template('index.html')
