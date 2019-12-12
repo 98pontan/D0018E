@@ -535,7 +535,14 @@ def checkout():
 
     finally:
         connection.close()
-    return render_template('checkout.html', data=data, accountBalance=session['accountbalance'])
+        total_sum = totalsum(data)
+    return render_template('checkout.html', data=data, accountBalance=session['accountbalance'], total_sum=total_sum)
+
+def totalsum(dict):
+    total_price = 0
+    for key in dict:
+        total_price += key['Quantity'] * key['Price']
+    return total_price
 
 @app.route('/removeproduct/<int:Product_ID>')
 @login_required
@@ -613,14 +620,14 @@ def purchase():
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql1 = "SELECT CartItem.Product_ID, Product. FROM CartItem WHERE Cart_ID = %s;"
-            cursor.execute(sql1, session['Cart_ID'])
+            sql = "INSERT INTO Orders(Orders.User_ID, Orders.Phone, Orders.Address, Orders.City, Orders.PostalCode, Orders.Country) SELECT User.User_ID, User.Phone, User.Address, User.City, User.PostalCode, User.Country FROM User WHERE User.User_ID = %s;"
+            cursor.execute(sql, session['user_id'])
             connection.commit()
-            data = cursor.fetchall()
-
+            """
             sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
             cursor.execute(sql0, session['Cart_ID'])
             connection.commit()
+            """
     finally:
         connection.close()
     return render_template('index.html')
