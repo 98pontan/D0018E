@@ -378,7 +378,7 @@ def search():
         return render_template('search.html')
 
 # category
-@app.route('/category/<int:Category_ID>')
+@app.route('/category/<int:Category_ID>', methods=['GET', 'POST'])
 # take in an id parameter but for now leave blank
 def category(Category_ID):
     connection = pymysql.connect(host='localhost',
@@ -414,7 +414,7 @@ def category(Category_ID):
 
 
 # PRODUCT
-@app.route('/product/<int:Product_ID>')
+@app.route('/product/<int:Product_ID>', methods=['GET', 'POST'])
 # take in an id parameter but for now leave blank
 def product(Product_ID):
     form = MakeReview(request.form)
@@ -514,7 +514,7 @@ def addCheckout(Product_ID):
 
 
 #checkout
-@app.route("/checkout")
+@app.route("/checkout", methods=['GET', 'POST'])
 @login_required
 def checkout():
     connection = pymysql.connect(host='localhost',
