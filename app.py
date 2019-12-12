@@ -23,7 +23,8 @@ def login_required(f):
             # return redirect(url_for('login', next=request.url))
             return f(*args, **kwargs)
         else:
-            return redirect(url_for('index'))
+            flash("Please login")
+            return redirect(url_for('login'))
     return decorated_function
 
 def admin_required(f):
@@ -37,7 +38,7 @@ def admin_required(f):
     return decorated_function
 
 @app.route('/')
-@app.route('/index')
+@app.route('/index', methods=['GET', 'POST'])
 def index():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
@@ -59,7 +60,7 @@ def index():
 
     finally:
         connection.close()
-    print(type(categories))
+   # print(type(categories))
     return render_template('index.html', categories=categories, products=products)
 
 
@@ -347,6 +348,33 @@ def createproduct(create_product):
         connection.commit()
     finally:
         connection.close()
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    with connection.cursor() as cursor:
+        if request.method == "POST":
+            book = request.form['book']
+            print(book)
+            # search with Title or Author
+            sql = "SELECT Product.Title, Product.Author, Product.Price, Product.Product_ID FROM Product WHERE Title LIKE %s OR Author LIKE %s"
+            cursor.execute(sql, (book, book))
+
+            connection.commit()
+            data = cursor.fetchall()
+            print("1", data)
+
+            return render_template('search.html', data=data)
+
+        connection.close()
+        return render_template('search.html')
 
 # category
 @app.route('/category/<int:Category_ID>')

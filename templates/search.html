@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="container">
+    <p></p>
+    <h1>Search Result</h1>
+    <section>
+
+
+        {% for i in data %}
+        <article class="card card-body" style="width: 20rem;">
+             <a href="..\product\{{ i['Product_ID']}}"><h5 class="card-title">{{i.Title}}</h5></a>
+            <p class="card-text">Author: {{i.Author}}</p>
+            <p class="card-text">Price: {{i.Price}} SEK</p>
+            <div class="row">
+                <div class="mx-auto "><a href="..\addItem\{{i['Product_ID']}}">
+                    <button class="btn btn-primary">Add to cart</button>
+                </a></div>
+                <div class="mx-auto "><a href="..\addcheckout\{{i['Product_ID']}}">
+                    <button class="btn btn-primary">Buy Now</button>
+                </a></div>
+            </div>
+        </article>
+        {% endfor %}
+
+
+
+
+    </section>
+</div>
+{% endblock %}
