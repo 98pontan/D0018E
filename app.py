@@ -114,7 +114,7 @@ def login():
         try:
             with connection.cursor() as cursor:
                 # Create a new record
-                sql = "SELECT User.User_ID, User.Hash, User.Salt, User.Privilege FROM User WHERE User.Email = %s;"
+                sql = "SELECT User.User_ID, User.Hash, User.Salt, User.Privilege, User.AccountBalance FROM User WHERE User.Email = %s;"
                 result = cursor.execute(sql, email)
             connection.commit()
         finally:
@@ -131,6 +131,7 @@ def login():
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
                 getCart_ID()
+                session['accountbalance'] = data['AccountBalance']
                 session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
                 print(session['privilege'])
@@ -415,33 +416,11 @@ def addItem(Product_ID):
         flash("Product added to cart")
         return redirect(url_for('category'))
 
-def getAccountBalanace():
-    connection = pymysql.connect(host='localhost',
-                                 user='oscar',
-                                 password='hejsan123',
-                                 db='BookCommerce',
-                                 charset='utf8',
-                                 cursorclass=pymysql.cursors.DictCursor)
-
-    try:
-        with connection.cursor() as cursor:
-            # Create a new record
-            sql0 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s;"
-            cursor.execute(sql0, session['user_id'])
-        connection.commit()
-
-    finally:
-        connection.close()
-
-    accountBalance = cursor.fetchall()
-    return accountBalance
 
 #pre-checkout to add products to cart
 @app.route('/addcheckout/<int:Product_ID>')
 @login_required
 def addCheckout(Product_ID):
-    print(Product_ID)
-    print(session, session['Cart_ID'])
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -485,8 +464,7 @@ def checkout():
 
     finally:
         connection.close()
-    accountBalance = getAccountBalanace()
-    return render_template('checkout.html', data=data, accountBalance=accountBalance)
+    return render_template('checkout.html', data=data, accountBalance=session['accountbalance'])
 
 @app.route('/removeproduct/<int:Product_ID>')
 @login_required
@@ -510,6 +488,7 @@ def removeproduct(Product_ID):
     flash("Product removed")
     return redirect(url_for('checkout'))
 
+
 def getCart_ID():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
@@ -532,8 +511,9 @@ def getCart_ID():
     print(session['Cart_ID'])
 
 
-@app.route('/purchase/<int:AccountBalance>')
-def purchase(AccountBalance):
+@app.route("/purchase")
+@login_required
+def purchase():
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -544,12 +524,12 @@ def purchase(AccountBalance):
     try:
         with connection.cursor() as cursor:
             # Create a new record
-            sql1 = "SELECT CartItem.Product_ID FROM CartItem WHERE Cart_ID = %s "
-            result = cursor.execute(sql1, session['Cart_ID'])
+            sql1 = "SELECT CartItem.Product_ID, Product. FROM CartItem WHERE Cart_ID = %s;"
+            cursor.execute(sql1, session['Cart_ID'])
             connection.commit()
             data = cursor.fetchall()
 
-            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s"
+            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
             cursor.execute(sql0, session['Cart_ID'])
             connection.commit()
     finally:
