@@ -6,9 +6,9 @@
         <section>
 
             <div class="carousel">
-                {% for i in accountBalance %}
-               <p> Your current saldo is {{i['AccountBalance']}} </p>
-                {% endfor%}
+
+               <p> Your current saldo is {{accountBalance}} </p>
+
 
             </div>
 
@@ -25,23 +25,14 @@
                     </ul>
                 </div>
             {% endfor %}
-            {% for i in accountBalance %}
-            <a href="..\purchase\{{i['Product_ID']}}"><button class="purchase">Purchase</button></a>
-            {% endfor %}
+
+            <div class="text-center">
+            <a href="{{url_for('purchase')}}" ><button class="btn btn-primary">Purchase</button></a>
+            </div>
+
 
         </section>
-        <style>
-            .purchase {
-                margin-left:50%;
-                margin-right:50%;
-                border-radius:10px;
-                font-size:30px;
-                background-color:red;
-            }
-            .carousel {
-                font-style:italic;
-            }
-        </style>
+
     </div>
 <style>
 
