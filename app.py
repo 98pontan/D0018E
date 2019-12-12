@@ -8,6 +8,7 @@ from hashlib import sha3_256
 from functools import wraps
 from Models import UserForms
 from Models.AdminForms import CreateProduct, CreateCategory
+from Models.ReviewForms import MakeReview
 
 from Models.UserForms import RegisterForm, LoginForm, EditAccountForm, DeleteAccount
 
@@ -416,6 +417,7 @@ def category(Category_ID):
 @app.route('/product/<int:Product_ID>')
 # take in an id parameter but for now leave blank
 def product(Product_ID):
+    form = MakeReview(request.form)
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -435,7 +437,31 @@ def product(Product_ID):
         if result >= 1:
             data = cursor.fetchall()
             #print(data)
-            return render_template('product.html', data=data)
+            return render_template('product.html', data=data, form=form)
+
+@app.route('/product/<int:Product_ID>', methods=['POST'])
+@login_required
+def makereview(Product_ID):
+    print("yes")
+
+    """if (request.method == 'POST') and form.validate():
+            user_id = session['user_id']
+            review = form.review.data
+            rating = form.review.data
+            connection = pymysql.connect(host='localhost',
+                                         user='oscar',
+                                         password='hejsan123',
+                                         db='BookCommerce',
+                                         charset='utf8',
+                                         cursorclass=pymysql.cursors.DictCursor)
+            try:
+                with connection.cursor() as cursor:
+                    # Create new record
+                    sql = "INSERT INTO Review"
+                    """
+
+
+    return product(Product_ID)
 
 
 
