@@ -2,48 +2,49 @@
 
 {% block body %}
     <div class="container">
-        <h1>Product</h1>
-        <section>
-
-            <div class="carousel">
+            <section>
+            <div class="carousel text-center">
+                <p></p>
                {% for i in data %}
-                <h3>{{i['Name']}}</h3>
+                <h1>{{i['Title']}}</h1>
                 {% endfor %}
             </div>
-            <article>
-
+            <article class=" text-center">
                 {% for product in data %}
-                    <ul>
-                        <li>Title: {{product.Title}}</li>
-                        <li>Author: {{product.Author}}</li>
-                        <li>Category: {{ product.Category_ID }}</li>
-                        <li>Price: {{product.Price}} SEK</li>
-                        <li>Units in Stock: {{product.UnitsInStock}}</li>
-                        <li>Pages: {{product.NumberOfPages}}</li>
-                        <li>Publisher: {{product.Publicer}}</li>
-                        <li>ISBM: {{ product.ISBN }}</li>
-                        <li>Language: {{product.Language}}</li>
-                        <a href="..\addItem\{{product['Product_ID']}}"> <button class="cartButton">Add to cart</button> </a>
-                        <a href="..\addcheckout\{{product['Product_ID']}}"> <button>Buy Now</button> </a>
+
+                    <h4>{{ product.Description }}</h4>
+
+                    <div class="row">
+                    <div class="col-4"></div>
+                    <div class="col-4 align-center">
+                    <ul class="list-group">
+                        <li class="list-group-item">Author: {{product.Author}}</li>
+                        <li class="list-group-item">Category: <a href="..\category\{{product['Category_ID']}}" id="{{ product.Category_ID }}">{{ product.Name }}</a></li>
+                        <li class="list-group-item">Price: {{product.Price}} SEK</li>
+                        <li class="list-group-item">Units in Stock: {{product.UnitsInStock}}</li>
+                        <li class="list-group-item">Pages: {{product.NumberOfPages}}</li>
+                        <li class="list-group-item">Publisher: {{product.Publicer}}</li>
+                        <li class="list-group-item">ISBM: {{ product.ISBN }}</li>
+                        <li class="list-group-item">Language: {{product.Language}}</li>
+                        <p></p>
+
+                        <div class="row">
+                            <div class="mx-auto">
+                                <a href="..\addItem\{{product['Product_ID']}}"> <button class="btn btn-primary">Add to cart</button> </a>
+                            </div>
+                            <div class="mx-auto">
+                                <a href="..\addcheckout\{{product['Product_ID']}}"> <button class="btn btn-primary">Buy Now</button> </a>
+                            </div>
+                        </div>
+
                     </ul>
+                    </div>
+                    <div class="col-4"></div>
+                    </div>
 
                 {% endfor %}
             </article>
 
-        <div>
-
-        </div>
-
-        </section>
+            </section>
     </div>
-<style>
-    table{
-        width:100%;
-    }
-    td, th {
-        border:1px solid #dddddd;
-        text-align:left;
-        padding:8px;
-    }
-</style>
 {% endblock %}

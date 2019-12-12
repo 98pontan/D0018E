@@ -376,13 +376,7 @@ def product(Product_ID):
             # Create a new record
             sql = "SELECT * FROM Product, Category WHERE Product.Product_ID = %s AND Category.Category_ID = Product.Category_ID "
             result = cursor.execute(sql, Product_ID)
-          #  sql = "SELECT * FROM Product, Category WHERE Product.Category_ID = 1 AND Category.Category_ID = 1";
             connection.commit()
-
-            # get categories
-            #cursor.execute("SELECT * FROM Category;")
-            #connection.commit()
-            #categories = cursor.fetchall()
 
     finally:
         connection.close()
