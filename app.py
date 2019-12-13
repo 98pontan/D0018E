@@ -26,7 +26,9 @@ def login_required(f):
         else:
             flash("Please login")
             return redirect(url_for('login'))
+
     return decorated_function
+
 
 def admin_required(f):
     @wraps(f)
@@ -36,7 +38,9 @@ def admin_required(f):
             return f(*args, **kwargs)
         else:
             return redirect(url_for('index'))
+
     return decorated_function
+
 
 @app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
@@ -54,14 +58,14 @@ def index():
             connection.commit()
             categories = cursor.fetchall()
 
-            #get "new releases"
+            # get "new releases"
             cursor.execute("SELECT * FROM Product ORDER BY Product_ID DESC LIMIT 3;")
             connection.commit()
             products = cursor.fetchall()
 
     finally:
         connection.close()
-   # print(type(categories))
+    # print(type(categories))
     return render_template('index.html', categories=categories, products=products)
 
 
@@ -86,6 +90,7 @@ def createcart():
         connection.commit()
     finally:
         connection.close()
+
 
 # register
 @app.route('/register', methods=['GET', 'POST'])
@@ -155,7 +160,6 @@ def login():
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
                 getCart_ID()
-                session['accountbalance'] = data['AccountBalance']
                 session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
                 return redirect(url_for('index'))
@@ -344,8 +348,9 @@ def createproduct(create_product):
                       %s,
                       %s);"""
             cursor.execute(sql, (
-            category, price, discount, units_in_stock, description, isbn, author, publicer, number_of_pages, language,
-            title))
+                category, price, discount, units_in_stock, description, isbn, author, publicer, number_of_pages,
+                language,
+                title))
         connection.commit()
     finally:
         connection.close()
@@ -369,14 +374,16 @@ def search():
             connection.commit()
             data = cursor.fetchall()
             if len(data)== 0 and book == 'all':
-                cursor.execute("SELECT Product.Title, Product.Author, Product.Price FROM Product")
+                cursor.execute("SELECT Product.Title, Product.Author, Product.Price, Product.Product_ID FROM Product")
                 connection.commit()
                 data = cursor.fetchall()
+                print(data)
             return render_template('search.html', data=data)
 
 
         connection.close()
         return render_template('search.html')
+
 
 # category
 @app.route('/category/<int:Category_ID>', methods=['GET', 'POST'])
@@ -410,7 +417,7 @@ def category(Category_ID):
     finally:
         connection.close()
         if result >= 1 and result2 >= 1:
-            #print(categoryName)
+            # print(categoryName)
             return render_template('category.html', product=product, categoryName=categoryName)
 
 
@@ -419,51 +426,77 @@ def category(Category_ID):
 # take in an id parameter but for now leave blank
 def product(Product_ID):
     form = MakeReview(request.form)
+    if (request.method == 'POST') and form.validate():
+        print(Product_ID)
+        makereview(Product_ID, form)
+        return redirect(url_for('index'))
+    else:
+        reviews = getreviews(Product_ID)
+        connection = pymysql.connect(host='localhost',
+                                     user='oscar',
+                                     password='hejsan123',
+                                     db='BookCommerce',
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.DictCursor)
+
+        try:
+            with connection.cursor() as cursor:
+                # Create a new record
+                sql = "SELECT * FROM Product, Category WHERE Product.Product_ID = %s AND Category.Category_ID = Product.Category_ID "
+                result = cursor.execute(sql, Product_ID)
+                connection.commit()
+
+        finally:
+            connection.close()
+            if result >= 1:
+                data = cursor.fetchone()
+                print(reviews)
+                return render_template('product.html', data=data, form=form, reviews=reviews)
+
+
+@login_required
+def makereview(product_id, form):
+    review = form.review.data
+    rating = int(form.rating.data)
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
                                  db='BookCommerce',
                                  charset='utf8',
                                  cursorclass=pymysql.cursors.DictCursor)
-
     try:
         with connection.cursor() as cursor:
-            # Create a new record
-            sql = "SELECT * FROM Product, Category WHERE Product.Product_ID = %s AND Category.Category_ID = Product.Category_ID "
-            result = cursor.execute(sql, Product_ID)
+            # Create new record
+            sql = """INSERT INTO `BookCommerce`.`Review`
+                    (
+                    `Product_ID`,
+                    `Review`,
+                    `Rating`,
+                    `User_ID`)
+                    VALUES
+                    (%s, %s, %s, %s);"""
+            cursor.execute(sql, (product_id, review, rating, session['user_id']))
             connection.commit()
-
     finally:
         connection.close()
-        if result >= 1:
-            data = cursor.fetchall()
-            #print(data)
-            return render_template('product.html', data=data, form=form)
 
-@app.route('/product/<int:Product_ID>', methods=['POST'])
-@login_required
-def makereview(Product_ID):
-    print("yes")
-
-    """if (request.method == 'POST') and form.validate():
-            user_id = session['user_id']
-            review = form.review.data
-            rating = form.review.data
-            connection = pymysql.connect(host='localhost',
-                                         user='oscar',
-                                         password='hejsan123',
-                                         db='BookCommerce',
-                                         charset='utf8',
-                                         cursorclass=pymysql.cursors.DictCursor)
-            try:
-                with connection.cursor() as cursor:
-                    # Create new record
-                    sql = "INSERT INTO Review"
-                    """
-
-
-    return product(Product_ID)
-
+def getreviews(product_id):
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            # Create new record
+            sql = "SELECT Review.Review, Review.Rating, User.FirstName, User.LastName FROM Review, User WHERE Review.Product_ID = %s AND Review.User_ID = User.User_ID"
+            cursor.execute(sql, product_id)
+            connection.commit()
+    finally:
+        connection.close()
+        data = cursor.fetchall()
+        return data
 
 
 @app.route('/addItem/<int:Product_ID>')
@@ -489,7 +522,7 @@ def addItem(Product_ID):
         return redirect(url_for('category'))
 
 
-#pre-checkout to add products to cart
+# pre-checkout to add products to cart
 @app.route('/addcheckout/<int:Product_ID>')
 @login_required
 def addCheckout(Product_ID):
@@ -536,8 +569,29 @@ def checkout():
 
     finally:
         connection.close()
+        getAccountbalance()
         total_sum = totalsum(data)
     return render_template('checkout.html', data=data, accountBalance=session['accountbalance'], total_sum=total_sum)
+
+def getAccountbalance():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s"
+            cursor.execute(sql0, session['user_id'])
+            connection.commit()
+            data = cursor.fetchone()
+            session['accountbalance'] = data['AccountBalance']
+    finally:
+        connection.close()
+
 
 def totalsum(dict):
     total_price = 0
@@ -545,15 +599,16 @@ def totalsum(dict):
         total_price += key['Quantity'] * key['Price']
     return total_price
 
+
 @app.route('/removeproduct/<int:Product_ID>')
 @login_required
 def removeproduct(Product_ID):
     connection = pymysql.connect(host='localhost',
-                                     user='oscar',
-                                     password='hejsan123',
-                                     db='BookCommerce',
-                                     charset='utf8',
-                                     cursorclass=pymysql.cursors.DictCursor)
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
 
     try:
         with connection.cursor() as cursor:
@@ -585,7 +640,7 @@ def getCart_ID():
     finally:
         connection.close()
     data = cursor.fetchone()
-    #print(data['Cart_ID'])
+    # print(data['Cart_ID'])
     try:
         session['Cart_ID'] = data['Cart_ID']
     except TypeError:
@@ -608,6 +663,7 @@ def getCart_ID():
             cart_data = cursor.fetchone()
             session['Cart_ID'] = cart_data['Cart_ID']
 
+
 @app.route('/purchase/<int:total_sum>')
 @login_required
 def purchase(total_sum):
@@ -620,33 +676,100 @@ def purchase(total_sum):
 
     try:
         with connection.cursor() as cursor:
-            # Create a new record
-            sql = "INSERT INTO Orders(Orders.User_ID, Orders.Phone, Orders.Address, Orders.City, Orders.PostalCode, Orders.Country) SELECT User.User_ID, User.Phone, User.Address, User.City, User.PostalCode, User.Country FROM User WHERE User.User_ID = %s;"
-            cursor.execute(sql, session['user_id'])
-            connection.commit()
 
-            sql0 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s"
-            cursor.execute(sql0, session['user_id'])
+            sql1 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s"
+            cursor.execute(sql1, session['user_id'])
             accountbalance = cursor.fetchall()
             connection.commit()
+            AB = 0
             for i in accountbalance:
                 AB = i['AccountBalance']
             print("tot_sum", total_sum)
-            if(AB >= total_sum):
+            if(AB >= total_sum and total_sum > 0):
                 newAB = AB - total_sum
-                sql1 = "UPDATE User SET AccountBalance = %s WHERE User_ID = %s"
-                cursor.execute(sql1, (newAB, session['user_id']))
+                sql2 = "UPDATE User SET AccountBalance = %s WHERE User_ID = %s"
+                cursor.execute(sql2, (newAB, session['user_id']))
                 connection.commit()
 
-                sql1 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
-                cursor.execute(sql1, session['Cart_ID'])
+                sql = "INSERT INTO Orders(Orders.User_ID, Orders.Phone, Orders.Address, Orders.City, Orders.PostalCode, Orders.Country) SELECT User.User_ID, User.Phone, User.Address, User.City, User.PostalCode, User.Country FROM User WHERE User.User_ID = %s;"
+                cursor.execute(sql, session['user_id'])
                 connection.commit()
-                connection.close()
-                return render_template('index.html')
-            flash("Not enough money")
+
+                sql4 = "SELECT MAX(Orders.Order_ID) FROM Orders WHERE Orders.User_ID = %s;"
+                cursor.execute(sql4, session['user_id'])
+                connection.commit()
+                data = cursor.fetchone()
+                session['order_id'] = data['MAX(Orders.Order_ID)']
+
+                sql5 = "INSERT INTO OrderProduct(OrderProduct.Order_ID, OrderProduct.Product_ID, OrderProduct.Quantity, OrderProduct.Price) SELECT %s, CartItem.Product_ID, CartItem.Quantity, Product.Price FROM CartItem, Product, Orders WHERE Orders.Order_ID = %s AND Cart_ID = %s AND CartItem.Product_ID = Product.Product_ID;"
+                cursor.execute(sql5, (session['order_id'], session['order_id'], session['Cart_ID']))
+                connection.commit()
+
+                sql3 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
+                cursor.execute(sql3, session['Cart_ID'])
+                connection.commit()
+                flash("Thank you for your purchase. Your order is on the way")
+                return redirect(url_for('index'))
+            else:
+                flash("Not enough money or empty cart")
     finally:
         connection.close()
-    return render_template('index.html')
+    return redirect(url_for('index'))
+
+
+def get_order_details():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            sql0 = "SELECT * FROM Orders WHERE Orders.User_ID = %s;"
+            cursor.execute(sql0, session['user_id'])
+        connection.commit()
+    finally:
+        connection.close()
+        cart_data = cursor.fetchall()
+        return cart_data
+
+
+@app.route("/orders")
+@login_required
+def orders():
+    order_details = get_order_details()
+    # print(order_details)
+    return render_template('orders.html', order_details=order_details)
+
+
+def order_product_details(cart_id):
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            sql0 = "SELECT OrderProduct.Price, OrderProduct.Quantity, Product.Title FROM OrderProduct, Product WHERE OrderProduct.Order_ID = %s AND OrderProduct.Product_ID = Product.Product_ID;"
+            cursor.execute(sql0, cart_id)
+        connection.commit()
+    finally:
+        connection.close()
+        cart_data = cursor.fetchall()
+        return cart_data
+
+
+@app.route("/orderproduct")
+@login_required
+def order_product():
+    order_id = request.args.get('order_id', None)
+    data = order_product_details(order_id)
+    cost = totalsum(data)
+    return render_template('orderproduct.html', data=data, cost=cost)
 
 
 if __name__ == '__main__':
