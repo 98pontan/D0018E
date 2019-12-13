@@ -363,16 +363,17 @@ def search():
     with connection.cursor() as cursor:
         if request.method == "POST":
             book = request.form['book']
-            print(book)
             # search with Title or Author
             sql = "SELECT Product.Title, Product.Author, Product.Price, Product.Product_ID FROM Product WHERE Title LIKE %s OR Author LIKE %s"
             cursor.execute(sql, (book, book))
-
             connection.commit()
             data = cursor.fetchall()
-            print("1", data)
-
+            if len(data)== 0 and book == 'all':
+                cursor.execute("SELECT Product.Title, Product.Author, Product.Price FROM Product")
+                connection.commit()
+                data = cursor.fetchall()
             return render_template('search.html', data=data)
+
 
         connection.close()
         return render_template('search.html')
@@ -607,9 +608,9 @@ def getCart_ID():
             cart_data = cursor.fetchone()
             session['Cart_ID'] = cart_data['Cart_ID']
 
-@app.route("/purchase")
+@app.route('/purchase/<int:total_sum>')
 @login_required
-def purchase():
+def purchase(total_sum):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -623,11 +624,26 @@ def purchase():
             sql = "INSERT INTO Orders(Orders.User_ID, Orders.Phone, Orders.Address, Orders.City, Orders.PostalCode, Orders.Country) SELECT User.User_ID, User.Phone, User.Address, User.City, User.PostalCode, User.Country FROM User WHERE User.User_ID = %s;"
             cursor.execute(sql, session['user_id'])
             connection.commit()
-            """
-            sql0 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
-            cursor.execute(sql0, session['Cart_ID'])
+
+            sql0 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s"
+            cursor.execute(sql0, session['user_id'])
+            accountbalance = cursor.fetchall()
             connection.commit()
-            """
+            for i in accountbalance:
+                AB = i['AccountBalance']
+            print("tot_sum", total_sum)
+            if(AB >= total_sum):
+                newAB = AB - total_sum
+                sql1 = "UPDATE User SET AccountBalance = %s WHERE User_ID = %s"
+                cursor.execute(sql1, (newAB, session['user_id']))
+                connection.commit()
+
+                sql1 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
+                cursor.execute(sql1, session['Cart_ID'])
+                connection.commit()
+                connection.close()
+                return render_template('index.html')
+            flash("Not enough money")
     finally:
         connection.close()
     return render_template('index.html')
