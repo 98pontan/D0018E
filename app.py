@@ -643,5 +643,58 @@ def purchase():
     return render_template('index.html')
 
 
+def get_order_details():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            sql0 = "SELECT * FROM Orders WHERE Orders.User_ID = %s;"
+            cursor.execute(sql0, session['user_id'])
+        connection.commit()
+    finally:
+        connection.close()
+        cart_data = cursor.fetchall()
+        return cart_data
+
+
+@app.route("/orders")
+@login_required
+def orders():
+    order_details = get_order_details()
+    #print(order_details)
+    return render_template('orders.html', order_details=order_details)
+
+def order_product_details(cart_id):
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            sql0 = "SELECT OrderProduct.Price, OrderProduct.Quantity, Product.Title FROM OrderProduct, Product WHERE OrderProduct.Order_ID = %s AND OrderProduct.Product_ID = Product.Product_ID;"
+            cursor.execute(sql0, cart_id)
+        connection.commit()
+    finally:
+        connection.close()
+        cart_data = cursor.fetchall()
+        return cart_data
+
+@app.route("/orderproduct")
+@login_required
+def order_product():
+    order_id = request.args.get('order_id', None)
+    data = order_product_details(order_id)
+    cost = totalsum(data)
+    return render_template('orderproduct.html', data=data, cost=cost)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+{% from "formhelper.html" import render_field %}
+
+{% block body %}
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in data %}
+            <tr>
+                <th scope="row">
+                    {{ item['Title'] }}
+                </th>
+                <td>
+                    {{ item['Price'] }}
+                </td>
+
+                <td>{{ item['Quantity'] }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h2>Total order value: {{ cost }} sek </h2>
+{% endblock %}
