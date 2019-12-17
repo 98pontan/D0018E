@@ -160,7 +160,6 @@ def login():
                 session['salt'] = data['Salt']
                 session['user_id'] = data['User_ID']
                 getCart_ID()
-                session['accountbalance'] = data['AccountBalance']
                 session['privilege'] = data['Privilege']
                 flash('You are now logged in!', 'success')
                 return redirect(url_for('index'))
@@ -369,23 +368,25 @@ def search():
     with connection.cursor() as cursor:
         if request.method == "POST":
             book = request.form['book']
-            print(book)
             # search with Title or Author
             sql = "SELECT Product.Title, Product.Author, Product.Price, Product.Product_ID FROM Product WHERE Title LIKE %s OR Author LIKE %s"
             cursor.execute(sql, (book, book))
-
             connection.commit()
             data = cursor.fetchall()
-            print("1", data)
-
+            if len(data)== 0 and book == 'all':
+                cursor.execute("SELECT Product.Title, Product.Author, Product.Price, Product.Product_ID FROM Product")
+                connection.commit()
+                data = cursor.fetchall()
+                print(data)
             return render_template('search.html', data=data)
+
 
         connection.close()
         return render_template('search.html')
 
 
 # category
-@app.route('/category/<int:Category_ID>')
+@app.route('/category/<int:Category_ID>', methods=['GET', 'POST'])
 # take in an id parameter but for now leave blank
 def category(Category_ID):
     connection = pymysql.connect(host='localhost',
@@ -545,8 +546,9 @@ def addCheckout(Product_ID):
         return redirect(url_for('checkout'))
 
 
-# checkout
-@app.route("/checkout")
+
+#checkout
+@app.route("/checkout", methods=['GET', 'POST'])
 @login_required
 def checkout():
     connection = pymysql.connect(host='localhost',
@@ -567,8 +569,28 @@ def checkout():
 
     finally:
         connection.close()
+        getAccountbalance()
         total_sum = totalsum(data)
     return render_template('checkout.html', data=data, accountBalance=session['accountbalance'], total_sum=total_sum)
+
+def getAccountbalance():
+    connection = pymysql.connect(host='localhost',
+                                 user='oscar',
+                                 password='hejsan123',
+                                 db='BookCommerce',
+                                 charset='utf8',
+                                 cursorclass=pymysql.cursors.DictCursor)
+
+    try:
+        with connection.cursor() as cursor:
+            # Create a new record
+            sql0 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s"
+            cursor.execute(sql0, session['user_id'])
+            connection.commit()
+            data = cursor.fetchone()
+            session['accountbalance'] = data['AccountBalance']
+    finally:
+        connection.close()
 
 
 def totalsum(dict):

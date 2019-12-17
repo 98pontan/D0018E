@@ -7,27 +7,27 @@
 
             <div class="carousel">
 
-               <p> Your current saldo is {{accountBalance}} </p>
+               <p> Your current saldo is {{accountBalance}} SEK</p>
 
 
             </div>
 
             {% for cartItem in data %}
-                <div class="col-sm-4">
-                <h3>Product</h3>
-                    <ul>
-                        <li>Title {{cartItem.Title}}</li>
-                        <li>Author {{cartItem.Author}}</li>
-                        <li>Price {{cartItem.Price}}</li>
-                        <li>Quantity {{cartItem.Quantity}} </li>
-                        <li>Product {{cartItem.Product_ID}}</li>
-                        <a href="..\removeproduct\{{cartItem['Product_ID']}}"> <button>Remove product</button></a>
-                    </ul>
+            <article class="card card-body" style="width: 20rem;">
+                <a href="..\product\{{ cartItem['Product_ID']}}"><h5 class="card-title">{{cartItem.Title}}</h5></a>
+                <p class="card-text">Author: {{cartItem.Author}}</p>
+                <p class="card-text">Price: {{cartItem.Price}} SEK</p>
+                <div class="row">
+                    <div class="mx-auto "><a href="..\removeproduct\{{cartItem['Product_ID']}}">
+                       <button class="btn btn-primary">Remove product</button>
+                    </a></div>
+
                 </div>
+            </article>
             {% endfor %}
             <h2>Total: {{ total_sum }} sek</h2>
             <div class="text-center">
-            <a href="{{url_for('purchase')}}" ><button class="btn btn-primary">Purchase</button></a>
+            <a href="..\purchase\{{total_sum}}" ><button class="btn btn-primary">Purchase</button></a>
             </div>
 
 
