@@ -642,9 +642,9 @@ def getCart_ID():
             session['Cart_ID'] = cart_data['Cart_ID']
 
 
-@app.route("/purchase")
+@app.route('/purchase/<int:total_sum>')
 @login_required
-def purchase():
+def purchase(total_sum):
     connection = pymysql.connect(host='localhost',
                                  user='oscar',
                                  password='hejsan123',
@@ -654,28 +654,45 @@ def purchase():
 
     try:
         with connection.cursor() as cursor:
-            # Create a new record
-            sql = "INSERT INTO Orders(Orders.User_ID, Orders.Phone, Orders.Address, Orders.City, Orders.PostalCode, Orders.Country) SELECT User.User_ID, User.Phone, User.Address, User.City, User.PostalCode, User.Country FROM User WHERE User.User_ID = %s;"
-            cursor.execute(sql, session['user_id'])
-            connection.commit()
 
-            sql1 = "SELECT MAX(Orders.Order_ID) FROM Orders WHERE Orders.User_ID = %s;"
+            sql1 = "SELECT User.AccountBalance FROM User WHERE User_ID = %s"
             cursor.execute(sql1, session['user_id'])
+            accountbalance = cursor.fetchall()
             connection.commit()
-            data = cursor.fetchone()
-            session['order_id'] = data['MAX(Orders.Order_ID)']
+            AB = 0
+            for i in accountbalance:
+                AB = i['AccountBalance']
+            print("tot_sum", total_sum)
+            if(AB >= total_sum and total_sum > 0):
+                newAB = AB - total_sum
+                sql2 = "UPDATE User SET AccountBalance = %s WHERE User_ID = %s"
+                cursor.execute(sql2, (newAB, session['user_id']))
+                connection.commit()
 
-            sql2 = "INSERT INTO OrderProduct(OrderProduct.Order_ID, OrderProduct.Product_ID, OrderProduct.Quantity, OrderProduct.Price) SELECT %s, CartItem.Product_ID, CartItem.Quantity, Product.Price FROM CartItem, Product, Orders WHERE Orders.Order_ID = %s AND Cart_ID = %s AND CartItem.Product_ID = Product.Product_ID;"
-            cursor.execute(sql2, (session['order_id'], session['order_id'], session['Cart_ID']))
-            connection.commit()
+                sql = "INSERT INTO Orders(Orders.User_ID, Orders.Phone, Orders.Address, Orders.City, Orders.PostalCode, Orders.Country) SELECT User.User_ID, User.Phone, User.Address, User.City, User.PostalCode, User.Country FROM User WHERE User.User_ID = %s;"
+                cursor.execute(sql, session['user_id'])
+                connection.commit()
 
-            sql3 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
-            cursor.execute(sql3, session['Cart_ID'])
-            connection.commit()
+                sql4 = "SELECT MAX(Orders.Order_ID) FROM Orders WHERE Orders.User_ID = %s;"
+                cursor.execute(sql4, session['user_id'])
+                connection.commit()
+                data = cursor.fetchone()
+                session['order_id'] = data['MAX(Orders.Order_ID)']
 
+                sql5 = "INSERT INTO OrderProduct(OrderProduct.Order_ID, OrderProduct.Product_ID, OrderProduct.Quantity, OrderProduct.Price) SELECT %s, CartItem.Product_ID, CartItem.Quantity, Product.Price FROM CartItem, Product, Orders WHERE Orders.Order_ID = %s AND Cart_ID = %s AND CartItem.Product_ID = Product.Product_ID;"
+                cursor.execute(sql5, (session['order_id'], session['order_id'], session['Cart_ID']))
+                connection.commit()
+
+                sql3 = "DELETE CartItem FROM CartItem WHERE Cart_ID = %s;"
+                cursor.execute(sql3, session['Cart_ID'])
+                connection.commit()
+                flash("Thank you for your purchase. Your order is on the way")
+                return redirect(url_for('index'))
+            else:
+                flash("Not enough money or empty cart")
     finally:
         connection.close()
-    return render_template('index.html')
+    return redirect(url_for('index'))
 
 
 def get_order_details():
