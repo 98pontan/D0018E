@@ -405,20 +405,31 @@ def category(Category_ID):
             connection.commit()
             product = cursor.fetchall()
 
-            # get "new releases"
+            # get category name
             sql2 = "SELECT Category.Name FROM Category WHERE Category_ID = %s"
             result2 = cursor.execute(sql2, Category_ID)
             connection.commit()
             categoryName = cursor.fetchone()
-            print("helo")
+
+            # get category description
+            sql3 = "SELECT Category.Description FROM Category WHERE Category_ID = %s"
+            result3 = cursor.execute(sql3, Category_ID)
+            connection.commit()
+            categoryDesc = cursor.fetchone()
+
+            #print("helo")
     except TypeError:
-        print("bajs")
+        print("typ error")
         return redirect(url_for('index'))
     finally:
         connection.close()
-        if result >= 1 and result2 >= 1:
+        if result >= 1 and result2 >= 1 and result3 >= 1:
             # print(categoryName)
-            return render_template('category.html', product=product, categoryName=categoryName)
+            return render_template('category.html', product=product, categoryName=categoryName, categoryDesc=categoryDesc)
+        elif result2 >= 1 and result3 >= 1:
+            return render_template('category.html', categoryName=categoryName, categoryDesc=categoryDesc)
+        else:
+            return index();
 
 
 # PRODUCT
@@ -450,7 +461,7 @@ def product(Product_ID):
             connection.close()
             if result >= 1:
                 data = cursor.fetchone()
-                print(reviews)
+                #   print(reviews)
                 return render_template('product.html', data=data, form=form, reviews=reviews)
 
 
